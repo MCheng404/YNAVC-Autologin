@@ -66,7 +66,7 @@ App::~App()
 
 bool App::initialize()
 {
-    // 0. 加载内置字体（文泉驿 + 霞鹜 + 苹方）
+    // 0. 加载内置字体（霞鹜 + Inter + JetBrains Mono）
     {
         auto loadFont = [](const QString &path) {
             int id = QFontDatabase::addApplicationFont(path);
@@ -78,10 +78,6 @@ bool App::initialize()
             }
             return id;
         };
-
-        // 文泉驿黑体（已有）
-        loadFont(QStringLiteral(":/AutoLogin/resources/fonts/WenYuanSansSC-Regular.ttf"));
-        loadFont(QStringLiteral(":/AutoLogin/resources/fonts/WenYuanSansSC-Bold.ttf"));
 
         // 霞鹜新晰黑 Plus（中文）
         loadFont(QStringLiteral(":/AutoLogin/resources/fonts/embedded/LXGWNeoXiHeiPlus.ttf"));

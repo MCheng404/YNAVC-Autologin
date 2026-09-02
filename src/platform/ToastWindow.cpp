@@ -99,7 +99,7 @@ Window {
                 text: toastTitle
                 font.pixelSize: 13
                 font.weight: Font.Medium
-                font.family: "Sarasa UI SC, WenQuanYi Rounded SC, WenQuanYi Micro Hei, sans-serif"
+                font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
                 color: themeVM ? themeVM.palette.textPrimary : "#f1f5f9"
                 renderType: Text.NativeRendering
                 elide: Text.ElideRight
@@ -110,7 +110,7 @@ Window {
                 anchors.right: parent.right
                 text: toastMessage
                 font.pixelSize: 12
-                font.family: "Sarasa UI SC, WenQuanYi Rounded SC, WenQuanYi Micro Hei, sans-serif"
+                font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
                 color: themeVM ? themeVM.palette.textSecondary : "#94a3b8"
                 renderType: Text.NativeRendering
                 elide: Text.ElideRight

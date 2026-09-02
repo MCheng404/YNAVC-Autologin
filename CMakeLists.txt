@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(AutoLogin VERSION 2.12 LANGUAGES CXX)
+project(AutoLogin VERSION 2.13 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -105,7 +105,7 @@ endif()
 # QML 模块注册（使用 qt6_add_qml_module 管理 QML 文件）
 qt6_add_qml_module(${PROJECT_NAME}
     URI AutoLogin
-    VERSION 2.12
+    VERSION 2.13
     QML_FILES
         src/view/Main.qml
         src/view/SettingsWindow.qml
@@ -130,15 +130,17 @@ qt6_add_qml_module(${PROJECT_NAME}
         resources/icons/connected.svg
         resources/icons/disconnected.svg
         resources/icons/authenticating.svg
-        resources/fonts/WenYuanSansSC-Regular.ttf
-        resources/fonts/WenYuanSansSC-Bold.ttf
-        resources/fonts/embedded/SarasaMonoSC-Regular.ttf
-        resources/fonts/embedded/SarasaUiSC-Regular.ttf
-        resources/fonts/embedded/SarasaUiSC-SemiBold.ttf
-        resources/fonts/embedded/WenYuanRoundedSC-Regular.ttf
-        resources/fonts/embedded/WenYuanRoundedSC-Medium.ttf
-        resources/fonts/embedded/WenYuanRoundedSC-Bold.ttf
         resources/fonts/embedded/LXGWNeoXiHeiPlus.ttf
         resources/fonts/embedded/InterVariable.ttf
         resources/fonts/embedded/JetBrainsMono-Regular.ttf
 )
+
+# 静态 Qt 构建时：将所有 QML 模块插件（QtQuick/Controls/Layouts 等）静态导入 exe
+get_target_property(_qt_core_type Qt6::Core TYPE)
+if(_qt_core_type STREQUAL "STATIC_LIBRARY")
+    qt6_import_qml_plugins(${PROJECT_NAME})
+    # 静态链接 MinGW/clang 运行时，消除 libgcc/libstdc++/libwinpthread 依赖
+    if(MINGW)
+        target_link_options(${PROJECT_NAME} PRIVATE -static)
+    endif()
+endif()
