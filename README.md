@@ -1,82 +1,109 @@
-# AutoLogin - 校园网自动登录工具
+# YNAVC-Autologin
 
-![](https://img.shields.io/badge/C%2B%2B-17-blue) ![](https://img.shields.io/badge/Qt-6.11-green) ![](https://img.shields.io/badge/Platform-Windows%2010%2F11-blueviolet) ![](https://img.shields.io/badge/Version-2.12-purple)
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)](https://en.cppreference.com/w/cpp/17) ![Qt6.11](https://img.shields.io/badge/Qt-6.11-green) ![Platform](https://img.shields.io/badge/Platform-Windows%2010/11-blueviolet) ![Version](https://img.shields.io/badge/Version-2.12-purple) ![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-red)
 
-一款简洁高效的校园网 HTTP 认证自动登录工具，基于 C++17 + Qt6 QML 构建，MVVM 架构，毛玻璃卡片 UI。
+> **English** | [中文](#中文) | [Русский](#русский)
+
+云南农业职业技术学院校园网自动认证服务，仅供交流学习使用。
 
 ---
 
-## 功能特性
+## English
+
+### Introduction
+
+YNAVC-Autologin is a campus network auto-authentication service for Yunnan Agricultural Vocational and Technical College. It supports HTTP portal authentication with automatic reconnection, schedule-based login, and a modern Qt6 QML UI.
+
+> **⚠️ This project is for educational and exchange purposes only. Commercial use is strictly prohibited.**
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| **Auto Login** | HTTP portal authentication with auto-reconnect on disconnect |
+| **Schedule** | Login/logout at specified times (e.g. 03:55–05:05) |
+| **Modern UI** | 10 cards, 16 components, Light/Dark/System themes |
+| **Account Management** | Multi-account support with credential storage |
+| **Network Detection** | Gateway ping + HTTP status check |
+| **System Tray** | Minimize to tray, startup with Windows |
+
+### Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Model | C++17, AuthEngine, ConnectivityChecker, Scheduler |
+| View | QML, Qt Quick, Qt Quick Controls 2 |
+| Platform | Win32/WinRT API |
+
+### Build Requirements
+
+- Qt 6.11+ (Qt Creator, Qt Network, Qt Widgets)
+- CMake 3.21+
+- Ninja
+- LLVM MinGW (llvm-mingw-w64)
+
+#### Build with LLVM MinGW
+
+```bash
+mkdir build && cd build
+cmake .. -G "Ninja"   -DCMAKE_PREFIX_PATH=D:/Qt/6.11.1/llvm-mingw_64   -DCMAKE_CXX_COMPILER=D:/Qt/Tools/llvm-mingw1706_64/bin/clang++.exe   -DCMAKE_MAKE_PROGRAM=E:/Tools/ninja/ninja.exe
+ninja
+windeployqt --no-translations YNAVC-Autologin.exe
+```
+
+### Network Configuration
+
+| Item | Value |
+|------|-------|
+| Gateway | `172.30.255.2` |
+| Auth Server | `connect.rom.miui.com` |
+| Timeout | 30s |
+| Retry Interval | 300s |
+| Schedule Default | 03:55–05:05 |
+
+### License
+
+This project is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+**Commercial use is strictly prohibited.** You may share and adapt this work for non-commercial purposes with proper attribution.
+
+---
+
+## 中文
+
+### 简介
+
+YNAVC-Autologin（云南农业职业技术学院自动认证服务）是一款校园网自动认证工具，支持 HTTP Portal 认证、断线自动重连、定时登录/注销，以及现代化的 Qt6 QML 界面。
+
+> **⚠️ 本项目仅供交流学习使用，严禁用于商业用途。**
+
+### 功能特性
 
 | 功能 | 说明 |
 |------|------|
-| **自动登录** | 检测断网后自动重连，指数退避重试（最大 5 分钟） |
-| **认证防抖** | 网络抖动时 3 秒窗口内只发起一次认证请求 |
-| **黑名单时段** | 凌晨 03:55–05:05 自动跳过认证（可配置） |
-| **定时检测** | 支持配置检测间隔（默认 30s），可设偏移量 |
-| **移动热点** | 自动管理 Windows 移动热点（WinRT COM） |
-| **托盘运行** | 系统托盘气泡通知，最小化后台 |
-| **主题切换** | Dark / Light / System 三态，16 种主题色 + Flow 流动渐变 |
-| **毛玻璃卡片** | 纯色 GlassCard 组件 + 主题色发光阴影 + 文字阴影 |
-| **自定义字体** | LXGW Neo XiHei Plus（中文）+ Inter（英文）+ JetBrains Mono（数字） |
-| **日志管理** | 自动清理 7 天前日志，日切割 |
-| **自启动** | 注册表自启动设置 |
+| **自动登录** | HTTP Portal 认证，断线自动重连 |
+| **定时计划** | 指定时间段自动登录/注销（如 03:55–05:05） |
+| **现代界面** | 10 个卡片、16 个组件，支持明亮/暗黑/系统主题 |
+| **账号管理** | 多账号支持，凭据本地安全存储 |
+| **网络检测** | 网关 Ping + HTTP 状态双重检测 |
+| **系统托盘** | 最小化到托盘，开机自启 |
 
----
+### 技术栈
 
-## UI 组件
-
-| 组件 | 文件 | 说明 |
-|------|------|------|
-| `GlassCard` | `src/view/Components/GlassCard.qml` | 毛玻璃卡片根组件，主题色持久发光阴影 + 悬停描边 |
-| `ShadowText` | `src/view/Components/ShadowText.qml` | 带主题色偏移阴影的文字组件 |
-| `SwitchToggle` | `src/view/Components/SwitchToggle.qml` | 弹性动画开关 |
-| `ColorDot` | `src/view/Components/ColorDot.qml` | 16 色主题选择圆点（22px） |
-| `ThemeToggle` | `src/view/Components/ThemeToggle.qml` | Dark/Light/System 三态切换 |
-| `FloatingScrollBar` | `src/view/Components/FloatingScrollBar.qml` | 浮动滚动条 |
-
-### 卡片列表
-
-| 卡片 | 说明 |
+| 层级 | 技术 |
 |------|------|
-| `BasicSettingsCard` | 基本功能：点击认证 / 自启 / 通知 / 通知位置 |
-| `SystemStatusCard` | 系统状态：实时时钟 / 运行时间 / 距上次认证 |
-| `NetworkSettingsCard` | 网络设置：自动热点 / 线程优先级 |
-| `ScheduleCard` | 定时认证：开关 / 间隔 / 偏移 |
-| `AccountCard` | 账户信息：用户名 / 密码（自动补 @unicom） |
-| `AccentColorCard` | 主题色彩：16 色选择 + Flow 流动渐变按钮 |
+| Model | C++17, AuthEngine, ConnectivityChecker, Scheduler |
+| View | QML, Qt Quick, Qt Quick Controls 2 |
+| Platform | Win32/WinRT API |
 
----
+### 构建环境
 
-## 技术架构
-
-```
-src/
-├── model/           # AuthEngine, ConnectivityChecker, Scheduler, Logger, Settings
-├── viewmodel/       # AuthViewModel, SettingsViewModel, TrayViewModel, ThemeViewModel
-├── view/            # QML (Main, SettingsWindow, 6 Cards, 10 Components)
-└── platform/        # NetworkAdapter, Registry, HotspotManager, Notification, SystemTray
-```
-
-| 层 | 职责 |
-|----|------|
-| Model | 业务逻辑，纯 C++ |
-| ViewModel | Q_PROPERTY 绑定，跨线程 UI 更新 |
-| View | QML 声明式 UI，毛玻璃卡片 |
-| Platform | Win32/WinRT API 隔离 |
-
----
-
-## 构建
-
-### 环境要求
-
-- Qt 6.11+ (Qt Quick, Qt Network, Qt Widgets)
+- Qt 6.11+（Qt Creator, Qt Network, Qt Widgets）
 - CMake 3.21+
-- Ninja 构建工具
-- llvm-mingw 或 MinGW-w64
+- Ninja
+- LLVM MinGW (llvm-mingw-w64)
 
-### 编译 (llvm-mingw, 推荐)
+#### 使用 LLVM MinGW 构建
 
 ```bash
 mkdir build && cd build
@@ -85,46 +112,95 @@ cmake .. -G "Ninja" \
   -DCMAKE_CXX_COMPILER=D:/Qt/Tools/llvm-mingw1706_64/bin/clang++.exe \
   -DCMAKE_MAKE_PROGRAM=E:/Tools/ninja/ninja.exe
 ninja
-windeployqt --no-translations AutoLogin.exe
+windeployqt --no-translations YNAVC-Autologin.exe
 ```
 
-### 编译 (MinGW)
+### 网络配置
+
+| 项目 | 值 |
+|------|-----|
+| 网关 | `172.30.255.2` |
+| 认证服务器 | `connect.rom.miui.com` |
+| 超时时间 | 30 秒 |
+| 重试间隔 | 300 秒 |
+| 默认定时 | 03:55–05:05 |
+
+### 开源协议
+
+本项目采用 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) 协议。
+
+**严禁商业用途。** 仅允许非商业性质的分享和改编，且需注明出处。
+
+---
+
+## Русский
+
+### Описание
+
+YNAVC-Autologin — служба автоматической аутентификации сети кампуса Яньнаньского сельскохозяйственного профессионально-технического колледжа. Поддерживает HTTP-портальную аутентификацию, автоматическое переподключение, планирование входа и современный интерфейс на Qt6 QML.
+
+> **⚠️ Этот проект предназначен только для учебных и обменных целей. Коммерческое использование строго запрещено.**
+
+### Возможности
+
+| Функция | Описание |
+|---------|----------|
+| **Авто вход** | HTTP-портальная аутентификация с автопереподключением |
+| **Расписание** | Автоматический вход/выход в заданное время |
+| **Современный UI** | 10 карточек, 16 компонентов, светлая/тёмная/системная темы |
+| **Учётные записи** | Многопользовательская поддержка с безопасным хранением |
+| **Проверка сети** | Пинг шлюза + HTTP-проверка статуса |
+| **Системный трей** | Сворачивание в трей, автозапуск с Windows |
+
+### Технологический стек
+
+| Уровень | Технология |
+|---------|-----------|
+| Model | C++17, AuthEngine, ConnectivityChecker, Scheduler |
+| View | QML, Qt Quick, Qt Quick Controls 2 |
+| Platform | Win32/WinRT API |
+
+### Требования для сборки
+
+- Qt 6.11+ (Qt Creator, Qt Network, Qt Widgets)
+- CMake 3.21+
+- Ninja
+- LLVM MinGW (llvm-mingw-w64)
+
+#### Сборка с LLVM MinGW
 
 ```bash
 mkdir build && cd build
 cmake .. -G "Ninja" \
-  -DCMAKE_PREFIX_PATH=D:/Qt/6.11.1/mingw_64 \
-  -DCMAKE_CXX_COMPILER=D:/Qt/Tools/mingw1310_64/bin/g++.exe \
+  -DCMAKE_PREFIX_PATH=D:/Qt/6.11.1/llvm-mingw_64 \
+  -DCMAKE_CXX_COMPILER=D:/Qt/Tools/llvm-mingw1706_64/bin/clang++.exe \
   -DCMAKE_MAKE_PROGRAM=E:/Tools/ninja/ninja.exe
 ninja
+windeployqt --no-translations YNAVC-Autologin.exe
 ```
 
----
+### Сетевая конфигурация
 
-## 字体
+| Параметр | Значение |
+|----------|----------|
+| Шлюз | `172.30.255.2` |
+| Сервер аутентификации | `connect.rom.miui.com` |
+| Тайм-аут | 30 сек |
+| Интервал повтора | 300 сек |
+| Расписание по умолчанию | 03:55–05:05 |
 
-| 字体 | 用途 | 许可 |
-|------|------|------|
-| [LXGW Neo XiHei Plus](https://github.com/lxgw/LxgwNeoXiHei) | 中文 UI | SIL OFL |
-| [Inter](https://rsms.me/inter/) | 英文 UI | SIL OFL |
-| [JetBrains Mono](https://www.jetbrains.com/lp/mono/) | 数字 / 等宽 | SIL OFL |
+### Лицензия
 
----
+Этот проект лицензирован по [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
-## 配置
-
-### 默认参数
-
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| 网关地址 | `172.30.255.2` | 认证服务器 |
-| 检测地址 | `connect.rom.miui.com` | 连通性检测 |
-| 检测间隔 | 30s | 网络状态检查周期 |
-| 重试上限 | 300s | 指数退避最大延迟 |
-| 黑名单 | 03:55-05:05 | 跳过认证时段 |
+**Коммерческое использование строго запрещено.** Вы можете распространять и адаптировать эту работу в некоммерческих целях с указанием авторства.
 
 ---
 
-## 开源许可
-
-仅供学习和交流使用，请遵守校园网使用规范。
+> ⚠️ **Disclaimer / 免责声明 / Отказ от ответственности**
+>
+> This project is provided as-is for educational and exchange purposes only. The authors are not responsible for any consequences arising from the use of this software. Commercial use is strictly prohibited.
+>
+> 本项目仅供交流学习使用，作者不对因使用本软件而产生的任何后果负责。严禁商业用途。
+>
+> Этот проект предоставляется как есть исключительно в учебных и обменных целях. Авторы не несут ответственности за любые последствия, возникающие в результате использования этого программного обеспечения. Коммерческое использование строго запрещено.
