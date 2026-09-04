@@ -8,6 +8,7 @@
 
 #include <QWindow>
 #include <QQuickWindow>
+#include <QPointer>
 #include <QTimer>
 #include <QQmlEngine>
 #include <QQmlComponent>
@@ -34,7 +35,12 @@ private:
     void positionWindow();
     void setupFadeOut();
 
-    QQuickWindow *m_window = nullptr;
+    QPointer<QQuickWindow> m_window;   // 顶层 QML 窗口（create() 返回，由本对象负责释放）
     QQuickItem  *m_root    = nullptr;
     QTimer      *m_timer   = nullptr;
+
+    // 堆叠管理 / 销毁守卫
+    bool m_disposed = false;
+    int  m_position = 0;
+    int  m_slot     = 0;
 };
