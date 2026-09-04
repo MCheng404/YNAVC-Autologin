@@ -1,6 +1,6 @@
 # YNAVC-Autologin
 
-[![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)](https://en.cppreference.com/w/cpp/17) ![Qt6.11](https://img.shields.io/badge/Qt-6.11-green) ![Platform](https://img.shields.io/badge/Platform-Windows%2010/11-blueviolet) ![Version](https://img.shields.io/badge/Version-2.13-purple) ![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-red) [![Download](https://img.shields.io/badge/Download-v2.13%20Single%20EXE-brightgreen)](https://github.com/MCheng404/autologin/releases/latest)
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)](https://en.cppreference.com/w/cpp/17) ![Qt6.11](https://img.shields.io/badge/Qt-6.11-green) ![Platform](https://img.shields.io/badge/Platform-Windows%2010/11-blueviolet) ![Version](https://img.shields.io/badge/Version-2.13-purple) ![License](https://img.shields.io/badge/License-GPLv3-blue) [![Download](https://img.shields.io/badge/Download-v2.13%20Single%20EXE-brightgreen)](https://github.com/MCheng404/autologin/releases/latest)
 
 > **English** | [中文](#中文) | [Русский](#русский)
 
@@ -14,7 +14,7 @@
 
 YNAVC-Autologin is a campus network auto-authentication service for Yunnan Agricultural Vocational and Technical College. It supports HTTP portal authentication with automatic reconnection, schedule-based login, and a modern Qt6 QML UI.
 
-> **⚠️ This project is for educational and exchange purposes only. Commercial use is strictly prohibited.**
+> **⚠️ Provided as-is for educational and exchange purposes, without warranty of any kind.**
 
 ### Features
 
@@ -88,9 +88,11 @@ cmake --build build_static --parallel
 
 ### License
 
-This project is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+This project is licensed under the [GNU General Public License v3.0](LICENSE).
 
-**Commercial use is strictly prohibited.** You may share and adapt this work for non-commercial purposes with proper attribution.
+This program is **free software**: you can redistribute it and/or modify it under the terms of the GPL v3. It is provided **without any warranty**.
+
+> **Third-party components:** This software statically links Qt 6 (LGPLv3). Under LGPL §4, you may extract and relink the Qt portions against your own build of Qt. The Qt source is available at [qt.io](https://www.qt.io/download-open-source); see `CMakeLists.txt` for the build configuration used here.
 
 ---
 
@@ -152,7 +154,7 @@ windeployqt --no-translations YNAVC-Autologin.exe
 
 ### 开源协议
 
-本项目采用 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) 协议。
+本项目采用 [GNU 通用公共许可证 v3.0](LICENSE)（GPLv3）授权。
 
 **严禁商业用途。** 仅允许非商业性质的分享和改编，且需注明出处。
 
@@ -216,7 +218,7 @@ windeployqt --no-translations YNAVC-Autologin.exe
 
 ### Лицензия
 
-Этот проект лицензирован по [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+Этот проект лицензирован по [GNU General Public License v3.0](LICENSE) (GPLv3).
 
 **Коммерческое использование строго запрещено.** Вы можете распространять и адаптировать эту работу в некоммерческих целях с указанием авторства.
 
@@ -224,7 +226,7 @@ windeployqt --no-translations YNAVC-Autologin.exe
 
 > ⚠️ **Disclaimer / 免责声明 / Отказ от ответственности**
 >
-> This project is provided as-is for educational and exchange purposes only. The authors are not responsible for any consequences arising from the use of this software. Commercial use is strictly prohibited.
+> This project is provided as-is for educational and exchange purposes, without warranty of any kind.
 >
 > 本项目仅供交流学习使用，作者不对因使用本软件而产生的任何后果负责。严禁商业用途。
 >
