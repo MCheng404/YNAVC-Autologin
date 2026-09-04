@@ -16,11 +16,11 @@ static QMap<int, QSet<int>> s_occupiedSlots;
 
 static int allocSlot(int position)
 {
-    QSet<int> &slots = s_occupiedSlots[position];
+    QSet<int> &slotSet = s_occupiedSlots[position];
     int idx = 0;
-    while (slots.contains(idx))
+    while (slotSet.contains(idx))
         ++idx;
-    slots.insert(idx);
+    slotSet.insert(idx);
     return idx;
 }
 

@@ -219,6 +219,8 @@ bool HotspotManager::start()
     IInspectable *pProfile = nullptr;
     ITetheringManager *pMgr = nullptr;
     bool started = false;
+    // 3. 重试获取 profile + 开启热点（profile 为空 / StartTetheringAsync 失败各重试）
+    const int kMaxAttempt = 3;
 
     // 1. 获取 NetworkInformation statics
     m_pWindowsCreateString(
@@ -244,7 +246,6 @@ bool HotspotManager::start()
     }
 
     // 3. 重试获取 profile + 开启热点（profile 为空 / StartTetheringAsync 失败各重试）
-    const int kMaxAttempt = 3;
     for (int attempt = 0; attempt < kMaxAttempt && !started; ++attempt) {
         if (attempt > 0) {
             Sleep(1500);
