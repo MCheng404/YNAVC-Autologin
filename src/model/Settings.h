@@ -21,7 +21,6 @@ class Settings : public QObject {
     Q_PROPERTY(bool highPriority READ highPriority WRITE setHighPriority NOTIFY highPriorityChanged)
     Q_PROPERTY(bool schedEnabled READ schedEnabled WRITE setSchedEnabled NOTIFY schedEnabledChanged)
     Q_PROPERTY(int schedInterval READ schedInterval WRITE setSchedInterval NOTIFY schedIntervalChanged)
-    Q_PROPERTY(int schedOffset READ schedOffset WRITE setSchedOffset NOTIFY schedOffsetChanged)
     Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
     Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged)
     Q_PROPERTY(int theme READ theme WRITE setTheme NOTIFY themeChanged)
@@ -45,7 +44,6 @@ public:
     bool highPriority() const { return m_highPriority; }
     bool schedEnabled() const { return m_schedEnabled; }
     int schedInterval() const { return m_schedInterval; }
-    int schedOffset() const { return m_schedOffset; }
     QString username() const { return m_username; }
     QString password() const { return m_password; }
     int theme() const { return m_theme; }
@@ -60,7 +58,6 @@ public:
     void setHighPriority(bool v);
     void setSchedEnabled(bool v);
     void setSchedInterval(int v);
-    void setSchedOffset(int v);
     void setUsername(const QString &v);
     void setPassword(const QString &v);
     void setTheme(int v);
@@ -75,7 +72,6 @@ signals:
     void highPriorityChanged();
     void schedEnabledChanged();
     void schedIntervalChanged();
-    void schedOffsetChanged();
     void usernameChanged();
     void passwordChanged();
     void themeChanged();
@@ -93,7 +89,6 @@ private:
     bool    m_highPriority  = false;
     bool    m_schedEnabled  = false;
     int     m_schedInterval = 3;
-    int     m_schedOffset   = 0;
     QString m_username;
     QString m_password;
     int     m_theme         = 2; // 0=Dark, 1=Light, 2=System

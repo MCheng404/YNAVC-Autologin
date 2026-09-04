@@ -26,14 +26,11 @@ void Settings::load()
     m_highPriority  = readBool("HighPriority", false);
     m_schedEnabled  = readBool("SchedEnabled", false);
     m_schedInterval = readInt("SchedInterval", 3);
-    m_schedOffset   = readInt("SchedOffset", 0);
     m_theme         = readInt("Theme", 0);
 
     // 范围校验
     if (m_schedInterval < 1) m_schedInterval = 1;
     if (m_schedInterval > 24) m_schedInterval = 24;
-    if (m_schedOffset < -30) m_schedOffset = -30;
-    if (m_schedOffset > 30) m_schedOffset = 30;
 
     // 读取字符串值
     auto username = Platform::Registry::readString(path, QStringLiteral("Username"));
@@ -74,8 +71,6 @@ void Settings::save()
                                     m_schedEnabled ? 1 : 0);
     Platform::Registry::writeDword(path, QStringLiteral("SchedInterval"),
                                     static_cast<DWORD>(m_schedInterval));
-    Platform::Registry::writeDword(path, QStringLiteral("SchedOffset"),
-                                    static_cast<DWORD>(m_schedOffset));
     Platform::Registry::writeDword(path, QStringLiteral("Theme"),
                                     static_cast<DWORD>(m_theme));
     Platform::Registry::writeDword(path, QStringLiteral("AccentColor"),
@@ -141,14 +136,6 @@ void Settings::setSchedInterval(int v) {
     if (m_schedInterval == v) return;
     m_schedInterval = v;
     emit schedIntervalChanged();
-    emit settingsChanged();
-}
-
-void Settings::setSchedOffset(int v) {
-    v = qBound(-30, v, 30);
-    if (m_schedOffset == v) return;
-    m_schedOffset = v;
-    emit schedOffsetChanged();
     emit settingsChanged();
 }
 

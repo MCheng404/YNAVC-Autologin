@@ -20,7 +20,6 @@ class SettingsViewModel : public QObject {
     Q_PROPERTY(bool highPriority READ highPriority WRITE setHighPriority NOTIFY highPriorityChanged)
     Q_PROPERTY(bool schedEnabled READ schedEnabled WRITE setSchedEnabled NOTIFY schedEnabledChanged)
     Q_PROPERTY(int schedInterval READ schedInterval WRITE setSchedInterval NOTIFY schedIntervalChanged)
-    Q_PROPERTY(int schedOffset READ schedOffset WRITE setSchedOffset NOTIFY schedOffsetChanged)
     Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
     Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged)
     Q_PROPERTY(int accentColor READ accentColor WRITE setAccentColor NOTIFY accentColorChanged)
@@ -37,7 +36,6 @@ public:
     bool highPriority() const { return m_settings->highPriority(); }
     bool schedEnabled() const { return m_settings->schedEnabled(); }
     int schedInterval() const { return m_settings->schedInterval(); }
-    int schedOffset() const { return m_settings->schedOffset(); }
     QString username() const { return m_settings->username(); }
     QString password() const { return m_settings->password(); }
     int accentColor() const { return m_settings->accentColor(); }
@@ -51,7 +49,6 @@ public:
     void setHighPriority(bool v) { m_settings->setHighPriority(v); }
     void setSchedEnabled(bool v) { m_settings->setSchedEnabled(v); }
     void setSchedInterval(int v) { m_settings->setSchedInterval(v); }
-    void setSchedOffset(int v) { m_settings->setSchedOffset(v); }
     void setUsername(const QString &v) { m_settings->setUsername(v); }
     void setPassword(const QString &v) { m_settings->setPassword(v); }
     void setAccentColor(int v) { m_settings->setAccentColor(v); }
@@ -74,7 +71,6 @@ signals:
     void highPriorityChanged();
     void schedEnabledChanged();
     void schedIntervalChanged();
-    void schedOffsetChanged();
     void usernameChanged();
     void passwordChanged();
     void accentColorChanged();

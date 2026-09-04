@@ -100,6 +100,7 @@ bool App::initialize()
 
     // 2. 创建 Platform 层
     m_hotspot = new Platform::HotspotManager();
+    m_hotspot->setLogger(m_logger);
     m_tray    = new Platform::SystemTray();
 
     // 初始化通知
@@ -319,9 +320,9 @@ void App::workerLoop()
             qint64 nowSec = QDateTime::currentSecsSinceEpoch();
             if (m_scheduler->shouldTrigger(nowSec)) {
                 if (!m_authEngine->isBusy() && !m_authEngine->isInBlackout()) {
-                    m_logger->log(QStringLiteral("定时认证触发（间隔%1h 偏移%2min）")
+                    m_logger->log(QStringLiteral("定时认证触发（间隔%1h 抖动%2min）")
                         .arg(m_settings->schedInterval())
-                        .arg(m_settings->schedOffset()));
+                        .arg(m_scheduler->jitterSec() / 60));
 
                     QMetaObject::invokeMethod(m_tray, [this]() {
                         m_tray->updateIcon(Platform::SystemTray::Status::Authenticating);
@@ -410,7 +411,8 @@ void App::workerLoop()
 
             // 自动开热点
             if (m_settings->autoHotspot() && m_hotspot) {
-                m_hotspot->start();
+                bool ok = m_hotspot->start();
+                m_logger->log(QStringLiteral("自动热点: %1").arg(ok ? QStringLiteral("已开启") : QStringLiteral("开启失败")));
             }
 
             // 成功后短等待

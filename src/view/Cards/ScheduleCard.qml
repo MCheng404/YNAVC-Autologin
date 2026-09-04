@@ -51,7 +51,7 @@ GlassCard {
             }
         }
 
-        // 间隔和偏移设置
+        // 间隔设置
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
@@ -69,22 +69,6 @@ GlassCard {
 
                 onValueChanged: {
                     settingsVM.schedInterval = value
-                }
-            }
-
-            // 误差偏移
-            CardSpinBox {
-                Layout.fillWidth: true
-                value: settingsVM.schedOffset
-                from: -30
-                to: 30
-                unit: "分钟 (±30)"
-                label: "误差偏移"
-                enabled: settingsVM.schedEnabled
-                themeVM: root.themeVM
-
-                onValueChanged: {
-                    settingsVM.schedOffset = value
                 }
             }
         }

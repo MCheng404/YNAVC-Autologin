@@ -6,11 +6,11 @@
 class Settings;
 
 /**
- * @brief 定时认证调度器（间隔 + 偏移）
+ * @brief 定时认证调度器（间隔 + 随机抖动）
  *
  * 计算定时认证的触发时间：
  * - 间隔：每 N 小时触发一次
- * - 偏移：±30 分钟随机偏移，避免大量设备同时认证
+ * - 抖动：每个周期随机 ±5 分钟，避免大量设备同时认证
  */
 class Scheduler : public QObject {
     Q_OBJECT
@@ -27,11 +27,15 @@ public:
     /** 计算下次触发时间戳（秒） */
     qint64 nextTriggerTime() const;
 
+    /** 当前周期抖动值（秒），供日志展示 */
+    qint64 jitterSec() const { return m_jitterSec; }
+
 signals:
     /** 触发认证信号 */
     void triggerAuth();
 
 private:
     qint64 m_lastSchedAuth{0};
+    qint64 m_jitterSec{0};   // 当前周期随机抖动（秒，±300）
     Settings *m_settings = nullptr;
 };

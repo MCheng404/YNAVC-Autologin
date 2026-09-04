@@ -19,8 +19,6 @@ SettingsViewModel::SettingsViewModel(Settings *settings, QObject *parent)
             this, &SettingsViewModel::schedEnabledChanged);
     connect(m_settings, &Settings::schedIntervalChanged,
             this, &SettingsViewModel::schedIntervalChanged);
-    connect(m_settings, &Settings::schedOffsetChanged,
-            this, &SettingsViewModel::schedOffsetChanged);
     connect(m_settings, &Settings::usernameChanged,
             this, &SettingsViewModel::usernameChanged);
     connect(m_settings, &Settings::passwordChanged,
@@ -47,7 +45,6 @@ void SettingsViewModel::resetDefaults()
     m_settings->setHighPriority(false);
     m_settings->setSchedEnabled(false);
     m_settings->setSchedInterval(3);
-    m_settings->setSchedOffset(0);
     m_settings->setUsername(QString());
     m_settings->setPassword(QString());
     m_settings->save();

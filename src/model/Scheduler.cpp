@@ -23,16 +23,13 @@ void Scheduler::recordTrigger(qint64 ts)
 qint64 Scheduler::nextTriggerTime() const
 {
     qint64 intervalSec = static_cast<qint64>(m_settings->schedInterval()) * 3600;
-    int offsetMin = m_settings->schedOffset();
-    qint64 offsetSec = static_cast<qint64>(offsetMin) * 60;
 
     qint64 base = 0;
     if (m_lastSchedAuth == 0) {
         // 首次：从当前时间往前推到最近的 interval 边界
         qint64 nowSec = QDateTime::currentSecsSinceEpoch();
-        qint64 period = intervalSec + offsetSec;
-        if (period > 0) {
-            qint64 elapsed = (nowSec % period);
+        if (intervalSec > 0) {
+            qint64 elapsed = (nowSec % intervalSec);
             base = nowSec - elapsed;
         } else {
             base = nowSec;
@@ -41,13 +38,8 @@ qint64 Scheduler::nextTriggerTime() const
         base = m_lastSchedAuth;
     }
 
-    qint64 next = 0;
-    if (offsetMin < 0) {
-        // 负偏移：下次触发时间 = last + interval - |offset|
-        next = base + intervalSec - static_cast<qint64>(-offsetMin) * 60;
-    } else {
-        next = base + intervalSec + offsetSec;
-    }
+    // 抖动在每个周期只摇一次（构造函数/recordTrigger），此处直接叠加
+    qint64 next = base + intervalSec + m_jitterSec;
 
     return next;
 }
