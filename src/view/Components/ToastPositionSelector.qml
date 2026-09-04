@@ -6,6 +6,12 @@ import "../Components"
  * 通知位置选择器（屏幕位置图示风格）
  * 一个迷你屏幕预览框，toast 出现在哪个位置就在对应位置渲染 toast 示意块
  * position: 0=右下角, 1=左下角, 2=顶部居中
+ *
+ * 视觉优化（保持「屏幕位置图示」核心交互不变）：
+ * - 顶部加极简标题条、底部加 dock 暗示，增强「这是屏幕」辨识度（纯色，无渐变）
+ * - toast 示意块改为「圆点 + 主/副标题两线」，比例更接近真实通知
+ * - 未选中占位透明度由 0.5 提升到 0.7，提升可辨识度
+ * - 选中切换给示意块加 Easing.OutBack 轻回弹（约 200ms）
  */
 Rectangle {
     id: root
@@ -19,6 +25,7 @@ Rectangle {
 
     implicitWidth: 172
     implicitHeight: 108
+    clip: true
 
     // ── 屏幕预览框 ──
     radius: 10
@@ -29,13 +36,47 @@ Rectangle {
 
     Behavior on opacity { NumberAnimation { duration: 150 } }
 
-    // ── 屏幕底座：桌面示意（中心小房子/显示器符号）──
+    // ── 屏幕顶部标题条（纯色）──
+    Rectangle {
+        id: titleBar
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: 12
+        radius: 6
+        color: themePalette ? themePalette.surfaceVariant : "#333"
+    }
+
+    // ── 屏幕底部 dock 暗示（居中短条 + 应用点，纯色）──
+    Rectangle {
+        id: dock
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        width: 26
+        height: 8
+        radius: 4
+        color: themePalette ? themePalette.surfaceVariant : "#333"
+
+        Row {
+            anchors.centerIn: parent
+            spacing: 3
+            Repeater {
+                model: 3
+                Rectangle {
+                    width: 3; height: 3; radius: 1.5
+                    color: themePalette ? themePalette.outline : "#666"
+                }
+            }
+        }
+    }
+
+    // ── 桌面/显示器符号（弱化，作背景）──
     LucideIcon {
         anchors.centerIn: parent
         name: "monitor"
         size: 22
         color: themePalette ? themePalette.outline : "#555"
-        opacity: 0.7
+        opacity: 0.35
     }
 
     // ══════════════════════════════════════════
@@ -53,12 +94,13 @@ Rectangle {
             width: 64
             height: 34
 
-            // 槽位锚定（屏幕内边距 8）
+            // 槽位锚定（屏幕内边距 8；顶部槽下移到标题条之下）
             anchors.right:      anchorRight  ? parent.right  : undefined
             anchors.bottom:     anchorBottom ? parent.bottom : undefined
             anchors.horizontalCenter: anchorCenterH ? parent.horizontalCenter : undefined
             anchors.top:        anchorTop    ? parent.top    : undefined
             anchors.margins: 8
+            anchors.topMargin: anchorTop ? 16 : 8
 
             readonly property bool isSelected: root.position === pos
             property bool hovered: false
@@ -79,9 +121,9 @@ Rectangle {
             Rectangle {
                 id: toastChip
                 width: parent.width
-                height: 22
+                height: 28
                 anchors.verticalCenter: parent.verticalCenter
-                radius: 5
+                radius: 6
 
                 color: {
                     if (!root.isEnabled) return "transparent"
@@ -94,13 +136,23 @@ Rectangle {
                     return root.themePalette ? root.themePalette.outline : "#555"
                 }
                 border.width: isSelected ? 1 : 0.6
-                opacity: isSelected ? 1.0 : (hovered ? 0.9 : 0.5)
+                opacity: isSelected ? 1.0 : (hovered ? 0.95 : 0.7)
 
                 Behavior on color { ColorAnimation { duration: 150 } }
                 Behavior on border.color { ColorAnimation { duration: 150 } }
                 Behavior on opacity { NumberAnimation { duration: 150 } }
 
-                // ── toast 内容示意：图标点 + 文字线 ──
+                // 选中切换轻回弹（先放大再回落，约 200ms）
+                SequentialAnimation {
+                    id: toastBounce
+                    NumberAnimation { target: toastChip; property: "scale"; to: 1.06; duration: 90;  easing.type: Easing.OutBack }
+                    NumberAnimation { target: toastChip; property: "scale"; to: 1.0;  duration: 110; easing.type: Easing.OutBack }
+                }
+                onIsSelectedChanged: {
+                    if (isSelected) toastBounce.restart()
+                }
+
+                // ── toast 内容：图标点 + 主/副标题两线（更接近真实通知比例）──
                 Row {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
@@ -118,16 +170,28 @@ Rectangle {
                         Behavior on color { ColorAnimation { duration: 150 } }
                     }
 
-                    // 文字示意横线
-                    Rectangle {
-                        width: 34; height: 4; radius: 2
+                    // 主标题 + 副标题
+                    Column {
                         anchors.verticalCenter: parent.verticalCenter
-                        color: {
-                            if (isSelected) return root.themePalette ? root.themePalette.onPrimary : "#fff"
-                            return root.themePalette ? root.themePalette.textTertiary : "#888"
+                        spacing: 3
+                        Rectangle {
+                            width: 34; height: 4; radius: 2
+                            color: {
+                                if (isSelected) return root.themePalette ? root.themePalette.onPrimary : "#fff"
+                                return root.themePalette ? root.themePalette.textTertiary : "#888"
+                            }
+                            opacity: isSelected ? 0.95 : 0.65
+                            Behavior on color { ColorAnimation { duration: 150 } }
                         }
-                        opacity: isSelected ? 0.9 : 0.6
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                        Rectangle {
+                            width: 22; height: 3; radius: 1.5
+                            color: {
+                                if (isSelected) return root.themePalette ? root.themePalette.onPrimary : "#fff"
+                                return root.themePalette ? root.themePalette.textTertiary : "#888"
+                            }
+                            opacity: isSelected ? 0.7 : 0.5
+                            Behavior on color { ColorAnimation { duration: 150 } }
+                        }
                     }
                 }
             }
@@ -139,10 +203,7 @@ Rectangle {
                 font.pixelSize: 9
                 font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
                 color: root.themePalette ? root.themePalette.textSecondary : "#aaa"
-                anchors.bottom: {
-                    if (anchorTop) return undefined
-                    return parent.top
-                }
+                anchors.bottom: anchorTop ? undefined : parent.top
                 anchors.top: anchorTop ? parent.bottom : undefined
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.margins: 2
