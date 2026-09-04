@@ -50,6 +50,16 @@ typedef HRESULT (STDMETHODCALLTYPE *PFN_RoGetActivationFactory)(HSTRING, const G
 typedef HRESULT (STDMETHODCALLTYPE *PFN_WindowsCreateString)(PCWSTR, UINT32, HSTRING*);
 typedef HRESULT (STDMETHODCALLTYPE *PFN_WindowsDeleteString)(HSTRING);
 
+// WinRT 初始化/反初始化函数指针类型
+// 必须在线程调用 RoGetActivationFactory 之前先 RoInitialize，否则返回 RO_E_NOTINITIALIZED
+typedef HRESULT (STDMETHODCALLTYPE *PFN_RoInitialize)(int initType);
+typedef void (STDMETHODCALLTYPE *PFN_RoUninitialize)(void);
+
+// RoInitialize 的多线程套间类型参数（RO_INIT_TYPE 枚举，值为 1）
+#ifndef RO_INIT_MULTITHREADED
+#define RO_INIT_MULTITHREADED 1
+#endif
+
 // INetworkOperatorTetheringManagerStatics2 vtable
 struct ITetheringManagerStatics;
 struct ITetheringManagerStaticsVtbl {

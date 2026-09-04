@@ -6,11 +6,30 @@
 
 #include <QDebug>
 
+#include "model/Logger.h"
+
 namespace Platform {
 
 HotspotManager::HotspotManager(QObject *parent)
     : QObject(parent)
 {
+}
+
+void HotspotManager::setLogger(Logger *logger)
+{
+    m_logger = logger;
+}
+
+void HotspotManager::logWarn(const QString &msg)
+{
+    if (m_logger) m_logger->log(msg);
+    else qWarning() << msg;
+}
+
+void HotspotManager::logInfo(const QString &msg)
+{
+    if (m_logger) m_logger->log(msg);
+    else qDebug() << msg;
 }
 
 HotspotManager::~HotspotManager()
@@ -40,9 +59,14 @@ bool HotspotManager::ensureLoaded()
         GetProcAddress(m_combase, "WindowsCreateString"));
     m_pWindowsDeleteString = reinterpret_cast<PFN_WindowsDeleteString>(
         GetProcAddress(m_combase, "WindowsDeleteString"));
+    m_pRoInitialize = reinterpret_cast<PFN_RoInitialize>(
+        GetProcAddress(m_combase, "RoInitialize"));
+    m_pRoUninitialize = reinterpret_cast<PFN_RoUninitialize>(
+        GetProcAddress(m_combase, "RoUninitialize"));
 
-    if (!m_pRoGetActivationFactory || !m_pWindowsCreateString || !m_pWindowsDeleteString) {
-        qWarning() << "热点：WinRT 函数获取失败";
+    if (!m_pRoGetActivationFactory || !m_pWindowsCreateString || !m_pWindowsDeleteString
+        || !m_pRoInitialize || !m_pRoUninitialize) {
+        logWarn("热点：WinRT 函数获取失败");
         FreeLibrary(m_combase);
         m_combase = nullptr;
         return false;
@@ -98,7 +122,12 @@ int HotspotManager::verifyHotspotOn()
 #ifdef Q_OS_WIN
     if (!ensureLoaded()) return -1;
 
-    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+    // 工作线程无 Qt 事件循环/Win32 消息泵，必须使用 MTA：
+    // 先 RoInitialize(MTA)，再 CoInitializeEx(MTA)，否则 WinRT 异步完成通知无法投递
+    // 仅当本次为首次初始化（返回 S_OK）才记录，避免拆掉调用方（start）已有的套间
+    bool roInit = (m_pRoInitialize(RO_INIT_MULTITHREADED) == S_OK);
+    HRESULT hrCo = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    bool comInit = (hrCo == S_OK);
 
     HSTRING hs1 = nullptr, hs2 = nullptr;
     INetworkInformationStatics *pNI = nullptr;
@@ -137,7 +166,8 @@ int HotspotManager::verifyHotspotOn()
     if (pProf)       pProf->lpVtbl->Release(pProf);
     if (pNI)         pNI->lpVtbl->Release(pNI);
 
-    CoUninitialize();
+    if (comInit) CoUninitialize();
+    if (roInit)  m_pRoUninitialize();
     return state;
 #else
     return -1;
@@ -159,7 +189,7 @@ int HotspotManager::processTetheringResult(IInspectable *pAsyncOp)
 
     // 不管 IAsyncInfo 返回什么，都检查 TetheringOperationalState
     int finalState = verifyHotspotOn();
-    qDebug() << "热点最终状态:" << finalState << "(2=On)";
+    logInfo(QString("热点最终状态: %1 (2=On)").arg(finalState));
     return finalState;
 #else
     Q_UNUSED(pAsyncOp)
@@ -171,12 +201,16 @@ bool HotspotManager::start()
 {
 #ifdef Q_OS_WIN
     if (!ensureLoaded()) {
-        qWarning() << "热点：combase.dll 加载失败";
+        logWarn("热点：combase.dll 加载失败");
         return false;
     }
 
-    // 使用 STA：WinRT UI 相关 API 需要 STA 才能正确完成异步操作
-    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+    // 工作线程无 Qt 事件循环/Win32 消息泵，必须使用 MTA：
+    // 先 RoInitialize(MTA)，再 CoInitializeEx(MTA)，否则 WinRT 异步完成通知无法投递
+    // 仅当本次为首次初始化（返回 S_OK）才记录，避免拆掉 verifyHotspotOn 已有的套间
+    bool roInit = (m_pRoInitialize(RO_INIT_MULTITHREADED) == S_OK);
+    HRESULT hrCo = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    bool comInit = (hrCo == S_OK);
 
     HRESULT hr = S_OK;
     HSTRING hsNetInfo = nullptr, hsTethMgr = nullptr;
@@ -184,6 +218,7 @@ bool HotspotManager::start()
     ITetheringManagerStatics  *pTethStatics = nullptr;
     IInspectable *pProfile = nullptr;
     ITetheringManager *pMgr = nullptr;
+    bool started = false;
 
     // 1. 获取 NetworkInformation statics
     m_pWindowsCreateString(
@@ -192,18 +227,11 @@ bool HotspotManager::start()
                                     reinterpret_cast<void**>(&pNetInfo));
     m_pWindowsDeleteString(hsNetInfo);
     if (FAILED(hr)) {
-        qWarning() << "热点：NetworkInformation 激活失败";
+        logWarn("热点：NetworkInformation 激活失败");
         goto cleanup;
     }
 
-    // 2. GetInternetConnectionProfile
-    hr = pNetInfo->lpVtbl->GetInternetConnectionProfile(pNetInfo, &pProfile);
-    if (FAILED(hr) || !pProfile) {
-        qWarning() << "热点：GetInternetConnectionProfile 失败";
-        goto cleanup;
-    }
-
-    // 3. 获取 NetworkOperatorTetheringManager statics
+    // 2. 获取 NetworkOperatorTetheringManager statics
     m_pWindowsCreateString(
         L"Windows.Networking.NetworkOperators.NetworkOperatorTetheringManager",
         67, &hsTethMgr);
@@ -211,38 +239,56 @@ bool HotspotManager::start()
                                     reinterpret_cast<void**>(&pTethStatics));
     m_pWindowsDeleteString(hsTethMgr);
     if (FAILED(hr)) {
-        qWarning() << "热点：TetheringManager 激活失败";
+        logWarn("热点：TetheringManager 激活失败");
         goto cleanup;
     }
 
-    // 4. CreateFromConnectionProfile
-    hr = pTethStatics->lpVtbl->CreateFromConnectionProfile(pTethStatics, pProfile,
-                                                             reinterpret_cast<IInspectable**>(&pMgr));
-    if (FAILED(hr) || !pMgr) {
-        qWarning() << "热点：CreateFromConnectionProfile 失败";
-        goto cleanup;
-    }
+    // 3. 重试获取 profile + 开启热点（profile 为空 / StartTetheringAsync 失败各重试）
+    const int kMaxAttempt = 3;
+    for (int attempt = 0; attempt < kMaxAttempt && !started; ++attempt) {
+        if (attempt > 0) {
+            Sleep(1500);
+            logWarn(QString("热点：第 %1 次重试获取连接配置文件").arg(attempt));
+        }
 
-    // 5. 检查当前状态（2=On，直接跳过）
-    {
+        // 释放上一次遗留的 profile / manager
+        if (pProfile) { pProfile->lpVtbl->Release(pProfile); pProfile = nullptr; }
+        if (pMgr)     { pMgr->lpVtbl->Release(pMgr);         pMgr = nullptr; }
+
+        // 3a. 获取 Internet 连接配置文件（profile 为空则重试）
+        hr = pNetInfo->lpVtbl->GetInternetConnectionProfile(pNetInfo, &pProfile);
+        if (FAILED(hr) || !pProfile) {
+            logWarn("热点：GetInternetConnectionProfile 失败");
+            continue;
+        }
+
+        // 3b. 由 profile 创建 TetheringManager
+        hr = pTethStatics->lpVtbl->CreateFromConnectionProfile(
+            pTethStatics, pProfile, reinterpret_cast<IInspectable**>(&pMgr));
+        if (FAILED(hr) || !pMgr) {
+            logWarn("热点：CreateFromConnectionProfile 失败");
+            continue;
+        }
+
+        // 3c. 已开启则直接成功
         INT32 state = 0;
         pMgr->lpVtbl->get_TetheringOperationalState(pMgr, &state);
         if (state == 2) {
-            qDebug() << "热点已在运行，无需再开启";
-            goto cleanup;
+            logInfo("热点已在运行，无需再开启");
+            started = true;
+            break;
         }
-    }
 
-    // 6. StartTetheringAsync
-    {
+        // 3d. 开启热点（失败则重试）
         IInspectable *pAsyncOp = nullptr;
         hr = pMgr->lpVtbl->StartTetheringAsync(pMgr, &pAsyncOp);
         if (FAILED(hr)) {
-            qWarning() << "热点：StartTetheringAsync 失败";
-        } else {
-            qDebug() << "热点：StartTetheringAsync 已调用，等待完成...";
-            processTetheringResult(pAsyncOp);
+            logWarn("热点：StartTetheringAsync 失败");
+            continue;
         }
+        logInfo("热点：StartTetheringAsync 已调用，等待完成...");
+        processTetheringResult(pAsyncOp);
+        started = true;
     }
 
 cleanup:
@@ -250,8 +296,9 @@ cleanup:
     if (pTethStatics) pTethStatics->lpVtbl->Release(pTethStatics);
     if (pProfile)    pProfile->lpVtbl->Release(pProfile);
     if (pNetInfo)    pNetInfo->lpVtbl->Release(pNetInfo);
-    CoUninitialize();
-    return true;
+    if (comInit) CoUninitialize();
+    if (roInit)  m_pRoUninitialize();
+    return started;
 #else
     return false;
 #endif
