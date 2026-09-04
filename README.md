@@ -1,6 +1,6 @@
 # YNAVC-Autologin
 
-[![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)](https://en.cppreference.com/w/cpp/17) ![Qt6.11](https://img.shields.io/badge/Qt-6.11-green) ![Platform](https://img.shields.io/badge/Platform-Windows%2010/11-blueviolet) ![Version](https://img.shields.io/badge/Version-2.12-purple) ![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-red)
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)](https://en.cppreference.com/w/cpp/17) ![Qt6.11](https://img.shields.io/badge/Qt-6.11-green) ![Platform](https://img.shields.io/badge/Platform-Windows%2010/11-blueviolet) ![Version](https://img.shields.io/badge/Version-2.13-purple) ![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-red) [![Download](https://img.shields.io/badge/Download-v2.13%20Single%20EXE-brightgreen)](https://github.com/MCheng404/autologin/releases/latest)
 
 > **English** | [中文](#中文) | [Русский](#русский)
 
@@ -50,6 +50,31 @@ cmake .. -G "Ninja"   -DCMAKE_PREFIX_PATH=D:/Qt/6.11.1/llvm-mingw_64   -DCMAKE_C
 ninja
 windeployqt --no-translations YNAVC-Autologin.exe
 ```
+
+#### Single-File (Static) Build
+
+The published `AutoLogin.exe` is fully static — all Qt libraries, QML modules and C++ runtime are linked into the binary. It runs on any Windows 10/11 x64 machine with no installation and no external DLLs.
+
+Building it requires a **statically-built Qt** (the official online installer only ships shared libs):
+
+```bash
+# 1. Build static Qt 6.11.1 (takes 20–40 min)
+cmake -DQT_BUILD_SUBMODULES=qtbase;qtshadertools;qtdeclarative;qtsvg ^
+  -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=D:/Qt/6.11.1-llvm-mingw-static ^
+  -DCMAKE_CXX_COMPILER=D:/Qt/Tools/llvm-mingw1706_64/bin/clang++.exe ^
+  -DCMAKE_MAKE_PROGRAM=D:/Qt/Tools/Ninja/ninja.exe -DQT_QMAKE_TARGET_MKSPEC=win32-clang-g++ ^
+  -DQT_BUILD_EXAMPLES=FALSE -DQT_BUILD_TESTS=FALSE -DCMAKE_BUILD_TYPE=Release ^
+  -DFEATURE_static_runtime=ON -DINPUT_opengl=no -G Ninja D:/Qt/6.11.1/Src
+cmake --build . --parallel && cmake --install .
+
+# 2. Build the app against it
+cmake -B build_static -G Ninja -DCMAKE_BUILD_TYPE=Release ^
+  -DCMAKE_PREFIX_PATH=D:/Qt/6.11.1-llvm-mingw-static ^
+  -DCMAKE_CXX_COMPILER=D:/Qt/Tools/llvm-mingw1706_64/bin/clang++.exe
+cmake --build build_static --parallel
+```
+
+> The project's `CMakeLists.txt` detects a static Qt automatically and calls `qt6_import_qml_plugins()` so every QML module is baked into the exe.
 
 ### Network Configuration
 
