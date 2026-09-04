@@ -38,7 +38,7 @@ ScrollBar {
             opacity: root.active || root.pressed ? 0.7 : 0.3
 
             Behavior on opacity {
-                NumberAnimation { duration: 150 }
+                NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
             }
 
             // hover 状态扩展

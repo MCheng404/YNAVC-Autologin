@@ -49,7 +49,7 @@ Item {
                 wrapMode: Text.WordWrap
 
                 Behavior on color {
-                    ColorAnimation { duration: 200 }
+                    ColorAnimation { duration: 200; easing.type: Easing.OutQuad }
                 }
             }
 
@@ -64,7 +64,7 @@ Item {
                 wrapMode: Text.WordWrap
 
                 Behavior on color {
-                    ColorAnimation { duration: 200 }
+                    ColorAnimation { duration: 200; easing.type: Easing.OutQuad }
                 }
             }
         }

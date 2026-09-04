@@ -91,7 +91,10 @@ Item {
 
     function closeSettings() {
         if (settingsLoader.item) {
-            settingsLoader.item.hide()
+            if (settingsLoader.item.visible)
+                settingsLoader.item.requestClose()
+            else
+                settingsLoader.item.hide()
         }
     }
 }

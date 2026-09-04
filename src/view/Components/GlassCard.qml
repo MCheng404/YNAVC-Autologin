@@ -8,6 +8,12 @@ import QtQuick.Layouts 1.15
 Item {
     id: root
 
+    // 悬停时极轻回弹放大（幅度极小，避免过度花哨）
+    scale: 1.0
+    Behavior on scale {
+        NumberAnimation { duration: 200; easing.type: Easing.OutBack }
+    }
+
     // ── 层 1：纯色底（完全不透明）──
     Rectangle {
         anchors.fill: parent
@@ -88,6 +94,7 @@ Item {
         onContainsMouseChanged: {
             hoverGlow.opacity = containsMouse ? 0.65 : 0
             outerGlow.opacity = containsMouse ? 0.25 : 0
+            root.scale = containsMouse ? 1.012 : 1.0
         }
     }
 }

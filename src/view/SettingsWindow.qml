@@ -60,6 +60,34 @@ Window {
     }
 
     // ============================================================
+    // 窗口开合动画根容器
+    // QQuickWindow 无 scale 属性，故对 contentRoot 做 scale + opacity
+    // ============================================================
+    Item {
+        id: contentRoot
+        anchors.fill: parent
+        opacity: 0
+        scale: 0.96
+
+        // 打开：scale 0.96→1 + opacity 0→1，约 260ms OutBack
+        ParallelAnimation {
+            id: openAnim
+            NumberAnimation { target: contentRoot; property: "scale"; from: 0.96; to: 1; duration: 260; easing.type: Easing.OutBack }
+            NumberAnimation { target: contentRoot; property: "opacity"; from: 0; to: 1; duration: 260; easing.type: Easing.OutBack }
+        }
+
+        // 关闭：反向，约 200ms InCubic，动画播完才真正 hide()
+        ParallelAnimation {
+            id: closeAnim
+            NumberAnimation { target: contentRoot; property: "scale"; from: 1; to: 0.96; duration: 200; easing.type: Easing.InCubic }
+            NumberAnimation { target: contentRoot; property: "opacity"; from: 1; to: 0; duration: 200; easing.type: Easing.InCubic }
+            onStopped: {
+                isClosing = false
+                settingsWindow.hide()
+            }
+        }
+
+    // ============================================================
     // Liquid Glass 窗口主体
     // 结构（从底到顶）：
     //   1. 外层阴影（inset shadow 效果）
@@ -218,14 +246,14 @@ Window {
 
                     Behavior on color {
                         enabled: !settingsWindow.isResizing
-                        ColorAnimation { duration: 150 }
+                        ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
                     }
 
                     MouseArea {
                         id: closeMouseArea
                         anchors.fill: parent
                         hoverEnabled: true
-                        onClicked: settingsWindow.hide()
+                        onClicked: settingsWindow.requestClose()
                     }
                 }
             }
@@ -374,18 +402,18 @@ Window {
 
                 Behavior on color {
                     enabled: !settingsWindow.isResizing
-                    ColorAnimation { duration: 150 }
+                    ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
                 }
                 Behavior on border.color {
                     enabled: !settingsWindow.isResizing
-                    ColorAnimation { duration: 150 }
+                    ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
                 }
 
                 MouseArea {
                     id: cancelMouseArea
                     anchors.fill: parent
                     hoverEnabled: true
-                    onClicked: settingsWindow.hide()
+                    onClicked: settingsWindow.requestClose()
                 }
             }
 
@@ -406,7 +434,7 @@ Window {
                     border.color: themeVM.palette.primary
                     border.width: 2
                     opacity: saveMouseArea.containsMouse ? 0.5 : 0
-                    Behavior on opacity { ColorAnimation { duration: 200 } }
+                    Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutQuad } }
                 }
 
                 Text {
@@ -422,7 +450,7 @@ Window {
 
                 Behavior on color {
                     enabled: !settingsWindow.isResizing
-                    ColorAnimation { duration: 150 }
+                    ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
                 }
 
                 MouseArea {
@@ -431,10 +459,39 @@ Window {
                     hoverEnabled: true
                     onClicked: {
                         settingsVM.save()
-                        settingsWindow.hide()
+                        settingsWindow.requestClose()
                     }
                 }
             }
+        }
+    }
+
+    // ── 关闭 contentRoot（窗口开合动画根容器）──
+    }
+
+    // ============================================================
+    // 窗口开合流程
+    // - 打开：visible 变 true 时由 onVisibleChanged 触发 openAnim
+    // - 关闭：requestClose() 启动退场动画，closeAnim.onStopped 才真正 hide()
+    // ============================================================
+    property bool isClosing: false
+
+    function requestClose() {
+        if (isClosing)
+            return
+        isClosing = true
+        closeAnim.start()
+    }
+
+    onVisibleChanged: {
+        if (visible) {
+            if (isClosing) {
+                isClosing = false
+                closeAnim.stop()
+            }
+            contentRoot.opacity = 0
+            contentRoot.scale = 0.96
+            openAnim.start()
         }
     }
 }

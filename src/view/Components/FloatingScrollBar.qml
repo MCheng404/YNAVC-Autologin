@@ -39,7 +39,7 @@ Item {
         color: trackColor
 
         Behavior on color {
-            ColorAnimation { duration: 150 }
+            ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
         }
     }
 
@@ -66,7 +66,7 @@ Item {
             z: -1
 
             Behavior on opacity {
-                ColorAnimation { duration: 200 }
+                NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
             }
         }
 
@@ -78,7 +78,7 @@ Item {
             color: handleMouseArea.containsMouse || handleMouseArea.pressed ? handleHoverColor : handleColor
 
             Behavior on color {
-                ColorAnimation { duration: 150 }
+                ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
             }
         }
 

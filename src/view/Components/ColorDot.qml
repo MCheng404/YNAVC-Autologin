@@ -15,7 +15,7 @@ Item {
 
     readonly property bool isSelected: themeVM.accentColorIndex === colorIndex
 
-    // 选中描边
+    // 选中描边（带 scale 弹入）
     Rectangle {
         anchors.centerIn: colorCircle
         width: colorCircle.width + 6
@@ -25,11 +25,13 @@ Item {
         border.color: accentColor
         border.width: 1.5
         opacity: isSelected ? 0.9 : 0
-        Behavior on opacity { NumberAnimation { duration: 200 } }
+        scale: isSelected ? 1 : 0.85
+        Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
+        Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
         z: -2
     }
 
-    // 选中光晕
+    // 选中光晕（带 scale 弹入）
     Rectangle {
         anchors.centerIn: colorCircle
         width: colorCircle.width + 10
@@ -39,7 +41,9 @@ Item {
         border.color: accentColor
         border.width: 1
         opacity: isSelected ? 0.5 : 0
-        Behavior on opacity { NumberAnimation { duration: 200 } }
+        scale: isSelected ? 1 : 0.85
+        Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
+        Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
         z: -1
     }
 
@@ -60,7 +64,7 @@ Item {
             radius: parent.radius + 2
             color: accentColor
             opacity: dotMouseArea.containsMouse ? 0.35 : 0
-            Behavior on opacity { NumberAnimation { duration: 150 } }
+            Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
             z: -1
         }
     }
