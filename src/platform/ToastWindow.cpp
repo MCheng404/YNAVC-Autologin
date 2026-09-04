@@ -204,6 +204,7 @@ Window {
     // 自动关闭：由 fadeOut 收尾，不再硬杀窗口
     Timer {
         interval: 4500
+        running: true
         onTriggered: fadeOut.start()
     }
 
