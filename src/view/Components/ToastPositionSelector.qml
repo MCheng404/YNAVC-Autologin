@@ -104,6 +104,9 @@ Rectangle {
 
             readonly property bool isSelected: root.position === pos
             property bool hovered: false
+            onIsSelectedChanged: {
+                if (isSelected) toastBounce.restart()
+            }
 
             // ── 点击热区（略大于示意块）──
             MouseArea {
@@ -148,10 +151,6 @@ Rectangle {
                     NumberAnimation { target: toastChip; property: "scale"; to: 1.06; duration: 90;  easing.type: Easing.OutBack }
                     NumberAnimation { target: toastChip; property: "scale"; to: 1.0;  duration: 110; easing.type: Easing.OutBack }
                 }
-                onIsSelectedChanged: {
-                    if (isSelected) toastBounce.restart()
-                }
-
                 // ── toast 内容：图标点 + 主/副标题两线（更接近真实通知比例）──
                 Row {
                     anchors.verticalCenter: parent.verticalCenter

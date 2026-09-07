@@ -14,6 +14,13 @@
 // 新 Toast 取最小空闲槽位，避免与已有 Toast 完全重叠；关闭后释放槽位，不做复杂重排。
 static QMap<int, QSet<int>> s_occupiedSlots;
 
+QObject *ToastWindow::s_themeVM = nullptr;
+
+void ToastWindow::setThemeViewModel(QObject *vm)
+{
+    s_themeVM = vm;
+}
+
 static int allocSlot(int position)
 {
     QSet<int> &slotSet = s_occupiedSlots[position];
@@ -32,17 +39,17 @@ static void freeSlot(int position, int idx)
 ToastWindow::ToastWindow(const QString &title, const QString &message,
                          const QString &type, int position, QWindow *transientParent)
 {
-    // 查找主窗口以获取 themeVM
-    QObject *themeVM = nullptr;
-    for (QWindow *w : QGuiApplication::allWindows()) {
-        if (w->isVisible() && !w->title().isEmpty()) {
+    // 优先使用 App 注入的 themeVM；未注入时回退到遍历窗口的 QML 上下文查找
+    QObject *themeVM = s_themeVM;
+    if (!themeVM) {
+        for (QWindow *w : QGuiApplication::allWindows()) {
             QQmlEngine *qe = qmlEngine(w);
-            if (qe) {
-                QVariant vm = qe->rootContext()->contextProperty("themeVM");
-                if (vm.value<QObject*>()) {
-                    themeVM = vm.value<QObject*>();
-                    break;
-                }
+            if (!qe)
+                continue;
+            QVariant vm = qe->rootContext()->contextProperty("themeVM");
+            if (vm.value<QObject*>()) {
+                themeVM = vm.value<QObject*>();
+                break;
             }
         }
     }

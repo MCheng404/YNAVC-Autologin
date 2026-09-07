@@ -12,6 +12,7 @@
 #include "platform/HotspotManager.h"
 #include "platform/NetworkAdapter.h"
 #include "platform/Notification.h"
+#include "platform/ToastWindow.h"
 
 #include <QApplication>
 #include <QQmlApplicationEngine>
@@ -111,6 +112,9 @@ bool App::initialize()
     m_settingsVM = new SettingsViewModel(m_settings, this);
     m_trayVM     = new TrayViewModel(m_authEngine, m_settings, this);
     m_themeVM    = new ThemeViewModel(m_settings, this);
+
+    // 通知窗口可能在任何 QML 窗口创建前弹出，提前注入主题 ViewModel
+    ToastWindow::setThemeViewModel(m_themeVM);
 
     // 4. 初始化日志
     m_logger->log(QStringLiteral("AutoLogin v2.13 启动"));

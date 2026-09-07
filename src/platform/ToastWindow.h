@@ -27,13 +27,17 @@ public:
                      const QString &type, int position,
                      QWindow *transientParent = nullptr);
 
+    // 由 App 在创建 ThemeViewModel 后注入。
+    // 首个通知可能早于任何 QML 窗口创建（托盘应用主窗口也常不可见），
+    // 此时无法从窗口/QML 上下文反查 themeVM，故在此直接持有。
+    static void setThemeViewModel(QObject *vm);
+
 private:
     ToastWindow(const QString &title, const QString &message,
                 const QString &type, int position, QWindow *transientParent);
     ~ToastWindow();
 
     void positionWindow();
-    void setupFadeOut();
 
     QPointer<QQuickWindow> m_window;   // 顶层 QML 窗口（create() 返回，由本对象负责释放）
     QQuickItem  *m_root    = nullptr;
@@ -43,4 +47,6 @@ private:
     bool m_disposed = false;
     int  m_position = 0;
     int  m_slot     = 0;
+
+    static QObject *s_themeVM;   // 由 App 注入的主题 ViewModel
 };
