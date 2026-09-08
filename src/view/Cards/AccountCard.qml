@@ -61,14 +61,30 @@ GlassCard {
                 height: 40
                 radius: 10
                 color: themeVM.palette.inputBackground
-                border.color: usernameInput.activeFocus ? themeVM.palette.inputFocusBorder : themeVM.palette.inputBorder
-                border.width: 1
+                border.color: usernameInput.activeFocus ? themeVM.palette.primary : themeVM.palette.inputBorder
+                border.width: usernameInput.activeFocus ? 2 : 1
+
+                // 焦点外发光（极淡 primaryContainer，纯色无渐变）
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.margins: -3
+                    radius: 13
+                    color: themeVM.palette.primaryContainer
+                    opacity: usernameInput.activeFocus ? 1.0 : 0
+                    z: -1
+                    Behavior on opacity {
+                        NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
+                    }
+                }
 
                 Behavior on border.color {
-                    ColorAnimation { duration: 200 }
+                    ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
+                }
+                Behavior on border.width {
+                    NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
                 }
                 Behavior on color {
-                    ColorAnimation { duration: 200 }
+                    ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
                 }
 
                 TextInput {
@@ -129,14 +145,30 @@ GlassCard {
                 height: 40
                 radius: 10
                 color: themeVM.palette.inputBackground
-                border.color: passwordInput.activeFocus ? themeVM.palette.inputFocusBorder : themeVM.palette.inputBorder
-                border.width: 1
+                border.color: passwordInput.activeFocus ? themeVM.palette.primary : themeVM.palette.inputBorder
+                border.width: passwordInput.activeFocus ? 2 : 1
+
+                // 焦点外发光（极淡 primaryContainer，纯色无渐变）
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.margins: -3
+                    radius: 13
+                    color: themeVM.palette.primaryContainer
+                    opacity: passwordInput.activeFocus ? 1.0 : 0
+                    z: -1
+                    Behavior on opacity {
+                        NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
+                    }
+                }
 
                 Behavior on border.color {
-                    ColorAnimation { duration: 200 }
+                    ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
+                }
+                Behavior on border.width {
+                    NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
                 }
                 Behavior on color {
-                    ColorAnimation { duration: 200 }
+                    ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
                 }
 
                 TextInput {

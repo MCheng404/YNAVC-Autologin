@@ -64,6 +64,9 @@ private:
     /** 构建右键菜单 */
     void rebuildMenu();
 
+    /** 状态枚举 → 菜单文案（如"状态：已连接"） */
+    QString statusLabel() const;
+
     QMenu *m_menu = nullptr;
     Status m_status = Status::Disconnected;
 };

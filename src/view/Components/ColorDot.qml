@@ -15,6 +15,12 @@ Item {
 
     readonly property bool isSelected: themeVM.accentColorIndex === colorIndex
 
+    // 按下回弹
+    scale: 1.0
+    Behavior on scale {
+        NumberAnimation { duration: 140; easing.type: Easing.OutBack }
+    }
+
     // 选中描边（带 scale 弹入）
     Rectangle {
         anchors.centerIn: colorCircle
@@ -74,6 +80,9 @@ Item {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
         acceptedButtons: Qt.LeftButton
+        onPressed: dotRoot.scale = 0.96
+        onReleased: dotRoot.scale = 1.0
+        onCanceled: dotRoot.scale = 1.0
         onClicked: {
             themeVM.accentColorIndex = colorIndex
         }

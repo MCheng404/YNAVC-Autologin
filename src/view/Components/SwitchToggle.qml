@@ -75,12 +75,16 @@ Item {
             width: 44
             height: 24
             radius: 24
+            scale: 1.0
+            Behavior on scale {
+                NumberAnimation { duration: 140; easing.type: Easing.OutBack }
+            }
             color: root.checked ? themeVM.palette.toggleActive : themeVM.palette.toggleTrack
             Behavior on color {
-                ColorAnimation { duration: 300; easing.type: Easing.InOutCubic }
+                ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
             }
 
-            // 滑块
+                // 滑块
             Rectangle {
                 id: thumb
                 width: 18
@@ -103,10 +107,8 @@ Item {
 
                 Behavior on x {
                     NumberAnimation {
-                        duration: 300
-                        easing.type: Easing.OutElastic
-                        easing.amplitude: 0.8
-                        easing.period: 0.4
+                        duration: 180
+                        easing.type: Easing.OutBack
                     }
                 }
             }
@@ -114,6 +116,9 @@ Item {
             // 整个 track 可点击
             MouseArea {
                 anchors.fill: parent
+                onPressed: toggleTrack.scale = 0.97
+                onReleased: toggleTrack.scale = 1.0
+                onCanceled: toggleTrack.scale = 1.0
                 onClicked: {
                     root.checked = !root.checked
                     root.toggled(root.checked)

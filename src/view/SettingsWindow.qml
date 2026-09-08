@@ -323,6 +323,7 @@ Window {
                             Layout.fillWidth: true
                             trayVM: settingsWindow.trayVM
                             themeVM: settingsWindow.themeVM
+                            active: settingsWindow.visible
                         }
 
                         ScheduleCard {

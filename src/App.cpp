@@ -111,7 +111,7 @@ bool App::initialize()
     // 3. 创建 ViewModel 层
     m_authVM     = new AuthViewModel(m_authEngine, this);
     m_settingsVM = new SettingsViewModel(m_settings, this);
-    m_trayVM     = new TrayViewModel(m_authEngine, m_settings, this);
+    m_trayVM     = new TrayViewModel(m_authEngine, m_settings, m_scheduler, this);
     m_themeVM    = new ThemeViewModel(m_settings, this);
 
     // 通知窗口可能在任何 QML 窗口创建前弹出，提前注入主题 ViewModel

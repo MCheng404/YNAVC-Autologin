@@ -51,6 +51,9 @@ void SystemTray::updateIcon(Status status)
     }
 
     setIcon(QIcon(QStringLiteral(":/AutoLogin/resources/icons/%1.svg").arg(iconName)));
+
+    // 状态变化后刷新菜单顶部状态项文案/图标
+    rebuildMenu();
 }
 
 void SystemTray::updateTooltip(const QVariant &tooltip)
@@ -68,6 +71,20 @@ void SystemTray::rebuildMenu()
     m_menu->clear();
 
     bool autostart = Registry::isAutostartEnabled();
+
+    // 顶部状态项（disabled，仅展示当前状态）
+    QAction *statusAction = m_menu->addAction(statusLabel());
+    statusAction->setEnabled(false);
+    QString statusIcon;
+    switch (m_status) {
+    case Status::Connected:     statusIcon = QStringLiteral("connected"); break;
+    case Status::Authenticating: statusIcon = QStringLiteral("authenticating"); break;
+    case Status::Disconnected:   statusIcon = QStringLiteral("disconnected"); break;
+    }
+    statusAction->setIcon(
+        QIcon(QStringLiteral(":/AutoLogin/resources/icons/%1.svg").arg(statusIcon)));
+
+    m_menu->addSeparator();
 
     QAction *showLogAction = m_menu->addAction(QStringLiteral("显示日志"));
     connect(showLogAction, &QAction::triggered, this, &SystemTray::showLogRequested);
@@ -97,6 +114,16 @@ void SystemTray::rebuildMenu()
 
     QAction *quitAction = m_menu->addAction(QStringLiteral("退出"));
     connect(quitAction, &QAction::triggered, this, &SystemTray::quitRequested);
+}
+
+QString SystemTray::statusLabel() const
+{
+    switch (m_status) {
+    case Status::Connected:     return QStringLiteral("状态：已连接");
+    case Status::Authenticating: return QStringLiteral("状态：认证中");
+    case Status::Disconnected:   return QStringLiteral("状态：未连接");
+    }
+    return QStringLiteral("状态：未连接");
 }
 
 } // namespace Platform

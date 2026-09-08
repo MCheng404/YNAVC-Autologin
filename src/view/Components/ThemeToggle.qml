@@ -18,6 +18,12 @@ Item {
     width: 80
     height: 36
 
+    // 按下回弹
+    scale: 1.0
+    Behavior on scale {
+        NumberAnimation { duration: 140; easing.type: Easing.OutBack }
+    }
+
     // 当前是否暗色，用于决定文字颜色
     readonly property color _textColor: root.isDark ? "#e2e8f0" : "#1e293b"
     readonly property color _bgColor: root.isDark ? "#252540" : "#f1f5f9"
@@ -32,10 +38,10 @@ Item {
         border.width: 1
 
         Behavior on color {
-            ColorAnimation { duration: 200 }
+            ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
         }
         Behavior on border.color {
-            ColorAnimation { duration: 200 }
+            ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
         }
 
         Row {
@@ -76,7 +82,7 @@ Item {
                 color: root._textColor
 
                 Behavior on color {
-                    ColorAnimation { duration: 200 }
+                    ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
                 }
             }
         }
@@ -86,6 +92,9 @@ Item {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
+            onPressed: root.scale = 0.97
+            onReleased: root.scale = 1.0
+            onCanceled: root.scale = 1.0
             onClicked: root.modeClicked()
         }
     }

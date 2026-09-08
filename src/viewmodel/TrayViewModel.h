@@ -6,6 +6,7 @@
 
 class AuthEngine;
 class Settings;
+class Scheduler;
 
 /**
  * @brief 托盘图标/菜单状态暴露给 QML
@@ -22,15 +23,19 @@ class TrayViewModel : public QObject {
     Q_PROPERTY(qint64 lastAuthMs READ lastAuthMs NOTIFY lastAuthMsChanged)
     Q_PROPERTY(qint64 appStartMs READ appStartMs CONSTANT)
 
+    /** 下次定时认证时间戳（秒，UTC）。定时未启用时返回 -1 */
+    Q_PROPERTY(qint64 nextAuthSec READ nextAuthSec CONSTANT)
+
 public:
     explicit TrayViewModel(AuthEngine *authEngine, Settings *settings,
-                            QObject *parent = nullptr);
+                            Scheduler *scheduler, QObject *parent = nullptr);
 
     QString iconSource() const { return m_iconSource; }
     QString tooltip() const { return m_tooltip; }
     bool autostartChecked() const { return m_autostartChecked; }
     qint64 lastAuthMs() const { return m_lastAuthMs; }
     qint64 appStartMs() const { return m_appStartMs; }
+    qint64 nextAuthSec() const;
 
     // QML 可调用方法
     Q_INVOKABLE void onTrayClicked();
@@ -64,6 +69,7 @@ private:
 
     AuthEngine *m_authEngine = nullptr;
     Settings   *m_settings   = nullptr;
+    Scheduler  *m_scheduler  = nullptr;
 
     QString m_iconSource = QStringLiteral("disconnected");
     QString m_tooltip    = QStringLiteral("校园网自动登录 - 监控中");

@@ -38,10 +38,10 @@ Rectangle {
     color: themeVM.palette.inputBackground
     border.color: root.enabled ? themeVM.palette.inputBorder : "transparent"
     border.width: 1
-    opacity: root.enabled ? 1.0 : 0.35
+    opacity: root.enabled ? 1.0 : 0.55
 
     Behavior on opacity {
-        NumberAnimation { duration: 200 }
+        NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
     }
     Behavior on color {
         ColorAnimation { duration: 200 }
@@ -99,7 +99,7 @@ Rectangle {
                 color: minusMouseArea.containsMouse ? themeVM.palette.hoverBackground : "transparent"
 
                 Behavior on color {
-                    ColorAnimation { duration: 100; easing.type: Easing.OutQuad }
+                    ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
                 }
                 Behavior on scale {
                     NumberAnimation { duration: 120; easing.type: Easing.OutBack }
@@ -116,6 +116,7 @@ Rectangle {
                     id: minusMouseArea
                     anchors.fill: parent
                     hoverEnabled: true
+                    cursorShape: root.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: {
                         if (!root.enabled) return
                         // 长按已连续步进过，松开时跳过这次单击，避免多跳一次
@@ -125,7 +126,7 @@ Rectangle {
                     onPressed: {
                         if (!root.enabled) return
                         root._minusLongPress = false
-                        minusButton.scale = 0.92
+                        minusButton.scale = 0.96
                         minusTimer.interval = 400
                         minusTimer.repeat = false
                         minusTimer.restart()
@@ -164,7 +165,7 @@ Rectangle {
                 color: plusMouseArea.containsMouse ? themeVM.palette.hoverBackground : "transparent"
 
                 Behavior on color {
-                    ColorAnimation { duration: 100; easing.type: Easing.OutQuad }
+                    ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
                 }
                 Behavior on scale {
                     NumberAnimation { duration: 120; easing.type: Easing.OutBack }
@@ -181,6 +182,7 @@ Rectangle {
                     id: plusMouseArea
                     anchors.fill: parent
                     hoverEnabled: true
+                    cursorShape: root.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: {
                         if (!root.enabled) return
                         if (root._plusLongPress) { root._plusLongPress = false; return }
@@ -189,7 +191,7 @@ Rectangle {
                     onPressed: {
                         if (!root.enabled) return
                         root._plusLongPress = false
-                        plusButton.scale = 0.92
+                        plusButton.scale = 0.96
                         plusTimer.interval = 400
                         plusTimer.repeat = false
                         plusTimer.restart()

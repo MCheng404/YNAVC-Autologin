@@ -16,6 +16,10 @@ GlassCard {
     required property var trayVM
     required property var themeVM
 
+    // 可见性开关：由 SettingsWindow 注入 settingsWindow.visible，
+    // 窗口隐藏时暂停 Timer，避免无谓刷新耗电
+    property bool active: true
+
 
     implicitHeight: col.implicitHeight + 32
 
@@ -53,12 +57,29 @@ GlassCard {
     // 距上次认证
     property string sinceAuthStr: "从未"
 
-    // 每秒刷新——同时更新 timeStr/runtimeStr/sinceAuthStr
+    // 联网状态（数据源：trayVM.iconSource —— connected/disconnected/authenticating）
+    property string statusKey: trayVM ? trayVM.iconSource : "disconnected"
+    property color statusDotColor: {
+        if (statusKey === "connected") return themeVM.palette.success
+        if (statusKey === "authenticating") return themeVM.palette.warning
+        return themeVM.palette.textTertiary
+    }
+    property string statusLabel: {
+        if (statusKey === "connected") return "已连接"
+        if (statusKey === "authenticating") return "认证中"
+        return "未连接"
+    }
+
+    // 下次定时认证倒计时文案（数据源：trayVM.nextAuthSec，秒）
+    property string nextAuthStr: "—"
+
+    // 每秒刷新——同时更新 timeStr/runtimeStr/sinceAuthStr/nextAuthStr
+    // 仅在 active（窗口可见）时运行；恢复可见时 triggeredOnStart 立即刷新一次
     Timer {
         id: ticker
         interval: 1000
         repeat: true
-        running: true
+        running: root.active
         triggeredOnStart: true
         onTriggered: {
             var now = Date.now()
@@ -83,6 +104,15 @@ GlassCard {
             // 距上次认证
             var last = trayVM ? trayVM.lastAuthMs : 0
             sinceAuthStr = last > 0 ? fmtHMS(now - last) : "从未"
+
+            // 下次定时认证倒计时
+            var nextSec = trayVM ? trayVM.nextAuthSec : -1
+            if (nextSec <= 0) {
+                nextAuthStr = "未启用"
+            } else {
+                var remain = nextSec - Math.floor(now / 1000)
+                nextAuthStr = remain > 0 ? fmtHMS(remain * 1000) : "即将认证"
+            }
         }
     }
 
@@ -107,6 +137,30 @@ GlassCard {
             font.hintingPreference: Font.PreferFullHinting
             color: themeVM.palette.textTertiary
             Layout.leftMargin: 4
+        }
+
+        // 联网状态（彩色圆点 + 文字）
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+            Layout.leftMargin: 4
+
+            Rectangle {
+                width: 10
+                height: 10
+                radius: 5
+                color: root.statusDotColor
+            }
+
+            Text {
+                text: root.statusLabel
+                font.pixelSize: 12
+                font.weight: Font.Normal
+                font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
+                renderType: Text.NativeRendering
+                font.hintingPreference: Font.PreferFullHinting
+                color: themeVM.palette.textSecondary
+            }
         }
 
         // 时间 + 日期（大号字体，居中）
@@ -208,6 +262,35 @@ GlassCard {
                     color: themeVM.palette.textSecondary
                     Layout.alignment: Qt.AlignHCenter
                 }
+            }
+        }
+
+        // 下次定时认证倒计时
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+            Layout.leftMargin: 4
+
+            Text {
+                text: "下次定时认证"
+                font.pixelSize: 11
+                font.weight: Font.Normal
+                font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
+                renderType: Text.NativeRendering
+                font.hintingPreference: Font.PreferFullHinting
+                color: themeVM.palette.textTertiary
+            }
+
+            Item { Layout.fillWidth: true }
+
+            Text {
+                text: root.nextAuthStr
+                font.pixelSize: 13
+                font.weight: Font.Medium
+                font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
+                renderType: Text.NativeRendering
+                font.hintingPreference: Font.PreferFullHinting
+                color: themeVM.palette.textSecondary
             }
         }
     }

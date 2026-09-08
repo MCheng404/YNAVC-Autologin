@@ -65,7 +65,7 @@ Item {
         opacity: 0
 
         Behavior on opacity {
-            ColorAnimation { duration: 220; easing.type: Easing.OutQuad }
+            ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
         }
     }
 
@@ -82,7 +82,7 @@ Item {
         z: -1
 
         Behavior on opacity {
-            ColorAnimation { duration: 260; easing.type: Easing.OutQuad }
+            ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
         }
     }
 

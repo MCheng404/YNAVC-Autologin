@@ -17,6 +17,14 @@ Item {
     property real padding: 0
     property Flickable _flickable: null
 
+    // 显隐状态：滚动中或悬停内容区时淡入，空闲淡出
+    property bool _idle: true
+    property bool _hovering: false
+    opacity: (scrollBarRoot.visible && (_hovering || !_idle)) ? 1 : 0
+    Behavior on opacity {
+        NumberAnimation { duration: 160; easing.type: Easing.OutQuad }
+    }
+
     // 统一的高度计算（ratio = 可视比例，handle 越小内容越多）
     property real hRatio: _flickable ? (_flickable.height / Math.max(1, _flickable.contentHeight)) : 1
     property real handleHH: Math.max(36, Math.min(96, track.height * hRatio))
@@ -40,6 +48,24 @@ Item {
 
         Behavior on color {
             ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
+        }
+
+        // 轨道悬停探测（不抢点击，仅用于显隐）
+        MouseArea {
+            id: trackMouseArea
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.NoButton
+            onContainsMouseChanged: {
+                if (containsMouse) {
+                    _hovering = true
+                    _idle = false
+                    _hideTimer.stop()
+                } else {
+                    _hovering = false
+                    _hideTimer.restart()
+                }
+            }
         }
     }
 
@@ -66,19 +92,24 @@ Item {
             z: -1
 
             Behavior on opacity {
-                NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
+                NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
             }
         }
 
         // 滑块本体
         Rectangle {
             id: handle
-            anchors.fill: parent
+            anchors.centerIn: parent
+            width: (handleMouseArea.containsMouse || handleMouseArea.pressed) ? scrollBarRoot.thickness + 3 : scrollBarRoot.thickness
+            height: parent.height
             radius: handleRadius
             color: handleMouseArea.containsMouse || handleMouseArea.pressed ? handleHoverColor : handleColor
 
             Behavior on color {
                 ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
+            }
+            Behavior on width {
+                NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
             }
         }
 
@@ -91,6 +122,17 @@ Item {
             drag.axis: Drag.YAxis
             drag.minimumY: track.y
             drag.maximumY: track.y + track.height - handleContainer.height
+
+            onContainsMouseChanged: {
+                if (containsMouse) {
+                    _hovering = true
+                    _idle = false
+                    _hideTimer.stop()
+                } else {
+                    _hovering = false
+                    _hideTimer.restart()
+                }
+            }
 
             onMouseYChanged: {
                 if (pressed && _flickable) {
@@ -111,8 +153,18 @@ Item {
                         _flickable.contentY / Math.max(1, _flickable.contentHeight - _flickable.height)
                     ))
                     handleContainer.y = track.y + (track.height - handleContainer.height) * p
+                    // 滚动时保持可见，空闲后淡出
+                    _idle = false
+                    _hideTimer.restart()
                 }
             })
         }
+    }
+
+    // 空闲淡出定时器
+    Timer {
+        id: _hideTimer
+        interval: 1500
+        onTriggered: _idle = true
     }
 }

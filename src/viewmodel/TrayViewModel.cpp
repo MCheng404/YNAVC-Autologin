@@ -1,6 +1,7 @@
 #include "TrayViewModel.h"
 #include "model/AuthEngine.h"
 #include "model/Settings.h"
+#include "model/Scheduler.h"
 #include "model/Logger.h"
 #include "platform/NetworkAdapter.h"
 #include "platform/Registry.h"
@@ -12,10 +13,11 @@
 #include <QStandardPaths>
 
 TrayViewModel::TrayViewModel(AuthEngine *authEngine, Settings *settings,
-                               QObject *parent)
+                               Scheduler *scheduler, QObject *parent)
     : QObject(parent)
     , m_authEngine(authEngine)
     , m_settings(settings)
+    , m_scheduler(scheduler)
 {
     // 记录应用启动时间戳（C++ 层早于 QML 执行，确保值正确）
     m_appStartMs = QDateTime::currentMSecsSinceEpoch();
@@ -115,6 +117,13 @@ void TrayViewModel::onAuthStateChanged(int state)
     default:
         break;
     }
+}
+
+qint64 TrayViewModel::nextAuthSec() const
+{
+    if (!m_settings->schedEnabled())
+        return -1;
+    return m_scheduler ? m_scheduler->nextTriggerTime() : 0;
 }
 
 void TrayViewModel::setIconSource(const QString &source)
