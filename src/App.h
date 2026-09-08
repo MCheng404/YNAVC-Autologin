@@ -41,6 +41,14 @@ public:
     /** 进入 Qt 事件循环，返回退出码 */
     int run();
 
+    /** 应用圆角矩形窗口遮罩（Windows API）
+     *  供 QML（Main.qml 的 Loader.onLoaded）调用。
+     *  注意：必须放在 public 段——private 的 Q_INVOKABLE 对 QML 不可见：
+     *  moc 仍会生成元对象条目，但 QML 引擎只暴露 public 方法，
+     *  结果 typeof app.applyWindowMask === 'undefined'。
+     */
+    Q_INVOKABLE void applyWindowMask(QWindow *win, int radius);
+
 private:
     /** 启动 Worker Thread（认证主循环） */
     void setupWorkerThread();
@@ -57,10 +65,6 @@ private:
     /** 可中断睡眠：每秒检查 m_running，可被析构时的 m_running=false 打断 */
     void interruptibleSleep(int seconds);
 
-    /** 应用圆角矩形窗口遮罩（Windows API） */
-    Q_INVOKABLE void applyWindowMask(QWindow *win, int radius);
-
-private:
     /** 扫描所有 QWindow 并应用圆角遮罩 */
     void applyMasksToAllWindows();
 
