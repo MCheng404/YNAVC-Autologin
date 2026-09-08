@@ -15,6 +15,7 @@
 #include "platform/ToastWindow.h"
 
 #include <QApplication>
+#include <QDebug>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QMetaObject>
@@ -153,16 +154,6 @@ bool App::initialize()
 
 int App::run()
 {
-    // 写入启动日志
-    {
-        QString logPath = "E:/Tools/autologin/NEWcode/build/dwm_log.txt";
-        QFile f(logPath);
-        if (f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            f.write(QByteArrayLiteral("[") + QTime::currentTime().toString().toUtf8()
-                + QByteArrayLiteral("] App::run() started\n"));
-        }
-    }
-
     // 加载 QML
     QQmlApplicationEngine engine;
 
@@ -455,18 +446,6 @@ void App::interruptibleSleep(int seconds)
 // 动态加载 dwmapi.dll 并调用 DwmSetWindowAttribute（避免 MinGW 链接问题）
 static bool applyDwmCornerPreference(HWND hwnd)
 {
-    // 写入日志文件
-    static QString logPath = "E:/Tools/autologin/NEWcode/build/dwm_log.txt";
-    auto writeLog = [&](const QString &msg) {
-        QFile f(logPath);
-        if (f.open(QIODevice::WriteOnly | QIODevice::Append)) {
-            f.write(QByteArrayLiteral("[") + QTime::currentTime().toString().toUtf8()
-                + QByteArrayLiteral("] ") + msg.toUtf8() + QByteArrayLiteral("\n"));
-        }
-    };
-
-    writeLog(QString("hwnd=%1").arg(reinterpret_cast<quintptr>(hwnd), 0, 16));
-
     // 静态函数指针：初始化一次（用 IIFE 避免捕获问题）
     static bool (WINAPI *pfn)(HWND, DWORD, LPCVOID, DWORD) = []() -> decltype(pfn) {
         HMODULE mod = LoadLibraryW(L"dwmapi.dll");
@@ -474,19 +453,16 @@ static bool applyDwmCornerPreference(HWND hwnd)
         return reinterpret_cast<decltype(pfn)>(
             reinterpret_cast<void*>(GetProcAddress(mod, "DwmSetWindowAttribute")));
     }();
-    writeLog(QString("pfn=%1").arg(quintptr(pfn), 0, 16));
 
-    if (!pfn) { writeLog("pfn is null"); return false; }
+    if (!pfn) {
+        qWarning() << "DWM: 无法解析 DwmSetWindowAttribute（dwmapi.dll 加载失败）";
+        return false;
+    }
 
     DWORD preference = DWMWCP_ROUND;
-    writeLog(QString("Calling pfn hwnd=%1 DWMWCP_ROUND=2").arg(reinterpret_cast<quintptr>(hwnd), 0, 16));
-    HRESULT hr = pfn(
-        hwnd,
-        DWMWA_WINDOW_CORNER_PREFERENCE,
-        &preference,
-        sizeof(preference)
-    );
-    writeLog(QString("Result hr=%1 S_OK=%2").arg(hr).arg(hr == 0));
+    HRESULT hr = pfn(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &preference, sizeof(preference));
+    if (FAILED(hr))
+        qWarning() << "DWM: DwmSetWindowAttribute 失败 hr=" << hr;
     return SUCCEEDED(hr);
 }
 
@@ -496,18 +472,6 @@ void App::applyWindowMask(QWindow *win, int radius)
     if (!win) return;
     HWND hwnd = reinterpret_cast<HWND>(win->winId());
     if (!hwnd) return;
-
-    // 写入日志文件（在函数最开头验证是否被调用）
-    static QString logPath = "E:/Tools/autologin/NEWcode/build/dwm_log.txt";
-    QFile f(logPath);
-    if (f.open(QIODevice::WriteOnly | QIODevice::Append)) {
-        f.write(QByteArrayLiteral("[") + QTime::currentTime().toString().toUtf8()
-            + QByteArrayLiteral("] applyWindowMask win=")
-            + QByteArray::number(reinterpret_cast<quintptr>(win), 16)
-            + QByteArrayLiteral(" hwnd=")
-            + QByteArray::number(reinterpret_cast<quintptr>(hwnd), 16)
-            + QByteArrayLiteral("\n"));
-    }
 
     // 使用 DWM API 设置圆角（与 SetWindowRgn 不同，不会与 DWM 冲突）
     // 注意：DWM 圆角由系统固定，不可自定义半径
@@ -523,17 +487,6 @@ void App::applyWindowMask(QWindow *win, int radius)
 
 void App::applyMasksToAllWindows()
 {
-    // 日志
-    {
-        QString logPath = "E:/Tools/autologin/NEWcode/build/dwm_log.txt";
-        QFile f(logPath);
-        if (f.open(QIODevice::WriteOnly | QIODevice::Append)) {
-            f.write(QByteArrayLiteral("[") + QTime::currentTime().toString().toUtf8()
-                + QByteArrayLiteral("] applyMasksToAllWindows windows=")
-                + QByteArray::number(qApp->allWindows().size())
-                + QByteArrayLiteral("\n"));
-        }
-    }
     for (QWindow *win : qApp->allWindows()) {
         applyWindowMask(win, 24);
     }
