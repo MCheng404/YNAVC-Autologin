@@ -27,7 +27,7 @@ GlassCard {
         // 卡片标题
         ShadowText {
             text: "定时自动认证"
-            font.pixelSize: 11
+            font.pixelSize: 12
             font.weight: Font.DemiBold
             font.capitalization: Font.AllUppercase
             font.letterSpacing: 1.2

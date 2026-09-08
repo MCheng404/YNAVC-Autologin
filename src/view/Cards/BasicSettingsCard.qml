@@ -84,7 +84,7 @@ GlassCard {
 
             Text {
                 text: "通知位置"
-                font.pixelSize: 11
+                font.pixelSize: 12
                 font.capitalization: Font.AllUppercase
                 font.letterSpacing: 0.5
                 font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"

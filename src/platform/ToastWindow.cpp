@@ -103,9 +103,9 @@ Window {
         NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
     }
 
-    width: 320
-    // 长文本自适应高度（82~132）
-    height: Math.min(132, Math.max(82, body.implicitHeight + 30))
+    width: 340
+    // 长文本自适应高度（88~132）
+    height: Math.min(132, Math.max(88, body.implicitHeight + 30))
 
     // 入场/离场偏移：底部从下方 +24 滑入，顶部从上方 -24 滑入
     property int enterOffset: (toastPosition === 2) ? -24 : 24
@@ -215,7 +215,7 @@ Window {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     text: toastTitle
-                    font.pixelSize: 13
+                    font.pixelSize: 14
                     font.weight: Font.Medium
                     font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
                     color: themeVM ? themeVM.palette.textPrimary : "#f1f5f9"
@@ -227,7 +227,7 @@ Window {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     text: toastMessage
-                    font.pixelSize: 12
+                    font.pixelSize: 13
                     font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
                     color: themeVM ? themeVM.palette.textSecondary : "#94a3b8"
                     renderType: Text.NativeRendering

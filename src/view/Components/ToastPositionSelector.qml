@@ -199,7 +199,7 @@ Rectangle {
             Text {
                 visible: hovered && !isSelected
                 text: pos === 0 ? "右下角" : (pos === 1 ? "左下角" : "顶部居中")
-                font.pixelSize: 9
+                font.pixelSize: 11
                 font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
                 color: root.themePalette ? root.themePalette.textSecondary : "#aaa"
                 anchors.bottom: anchorTop ? undefined : parent.top

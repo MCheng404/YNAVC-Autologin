@@ -15,7 +15,7 @@ Item {
 
     signal modeClicked()
 
-    width: 80
+    width: 84
     height: 36
 
     // 按下回弹
@@ -74,7 +74,7 @@ Item {
                     default: return "暗色"
                     }
                 }
-                font.pixelSize: 12
+                font.pixelSize: 13
                 font.weight: Font.Medium
                 font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
                 renderType: Text.NativeRendering

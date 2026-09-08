@@ -92,7 +92,7 @@ GlassCard {
                     anchors.fill: parent
                     anchors.margins: 10
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: 13
+                    font.pixelSize: 14
                     font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
                     renderType: Text.NativeRendering
                     font.hintingPreference: Font.PreferFullHinting
@@ -110,7 +110,7 @@ GlassCard {
                     anchors.fill: parent
                     anchors.margins: 10
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: 13
+                    font.pixelSize: 14
                     font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
                     renderType: Text.NativeRendering
                     font.hintingPreference: Font.PreferFullHinting
@@ -176,7 +176,7 @@ GlassCard {
                     anchors.fill: parent
                     anchors.margins: 10
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: 13
+                    font.pixelSize: 14
                     font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
                     renderType: Text.NativeRendering
                     font.hintingPreference: Font.PreferFullHinting
@@ -195,7 +195,7 @@ GlassCard {
                     anchors.fill: parent
                     anchors.margins: 10
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: 13
+                    font.pixelSize: 14
                     font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
                     renderType: Text.NativeRendering
                     font.hintingPreference: Font.PreferFullHinting

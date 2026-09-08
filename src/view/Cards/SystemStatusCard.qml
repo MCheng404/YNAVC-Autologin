@@ -204,12 +204,12 @@ GlassCard {
             spacing: 0
 
             // 运行时间
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 8
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
 
-                Text {
-                    text: "运行时间"
+                    Text {
+                        text: "运行时间"
                     font.pixelSize: 11
                     font.weight: Font.Normal
                     font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
@@ -285,7 +285,7 @@ GlassCard {
 
             Text {
                 text: root.nextAuthStr
-                font.pixelSize: 13
+                font.pixelSize: 14
                 font.weight: Font.Medium
                 font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
                 renderType: Text.NativeRendering

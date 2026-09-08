@@ -17,8 +17,8 @@ import "Components"
 Window {
     id: settingsWindow
 
-    width: 640
-    height: 640
+    width: 680
+    height: 720
     minimumWidth: 560
     minimumHeight: 560
     // 无边框窗口，自己实现拖拽和关闭按钮
@@ -206,7 +206,7 @@ Window {
                 // 大字"设置"标题（靠左）
                 ShadowText {
                     text: "设置"
-                    font.pixelSize: 22
+                    font.pixelSize: 24
                     font.weight: Font.Bold
                     font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
                     renderType: Text.NativeRendering
@@ -393,7 +393,7 @@ Window {
                 Text {
                     anchors.centerIn: parent
                     text: "取消"
-                    font.pixelSize: 13
+                    font.pixelSize: 14
                     font.weight: Font.Medium
                     font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
                     renderType: Text.NativeRendering
@@ -441,7 +441,7 @@ Window {
                 Text {
                     anchors.centerIn: parent
                     text: "保存"
-                    font.pixelSize: 13
+                    font.pixelSize: 14
                     font.weight: Font.Medium
                     font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
                     renderType: Text.NativeRendering

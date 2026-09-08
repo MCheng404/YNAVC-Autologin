@@ -183,7 +183,7 @@ GlassCard {
         // 当前选中颜色的文字提示
         Text {
             text: "当前主题色"
-            font.pixelSize: 11
+            font.pixelSize: 13
             renderType: Text.NativeRendering
             font.hintingPreference: Font.PreferFullHinting
             color: themeVM.palette.textTertiary

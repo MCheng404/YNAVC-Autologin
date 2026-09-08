@@ -33,7 +33,7 @@ Rectangle {
     required property string label
     required property var themeVM
 
-    height: 80
+    height: 84
     radius: 10
     color: themeVM.palette.inputBackground
     border.color: root.enabled ? themeVM.palette.inputBorder : "transparent"
@@ -76,7 +76,7 @@ Rectangle {
         // 标签
         Text {
             text: root.label
-            font.pixelSize: 11
+            font.pixelSize: 12
             font.capitalization: Font.AllUppercase
             font.letterSpacing: 0.5
             font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
@@ -148,7 +148,7 @@ Rectangle {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 text: root.value.toString()
-                font.pixelSize: 22
+                font.pixelSize: 24
                 font.weight: Font.DemiBold
                 font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
                 renderType: Text.NativeRendering
@@ -211,7 +211,7 @@ Rectangle {
         // 单位文字
         Text {
             text: root.unit
-            font.pixelSize: 12
+            font.pixelSize: 13
             font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
             renderType: Text.NativeRendering
             font.hintingPreference: Font.PreferFullHinting

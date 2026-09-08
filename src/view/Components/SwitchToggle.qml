@@ -40,7 +40,7 @@ Item {
 
             Text {
                 text: root.title
-                font.pixelSize: 13
+                font.pixelSize: 14
                 font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
                 renderType: Text.NativeRendering
                 font.hintingPreference: Font.PreferFullHinting
@@ -55,7 +55,7 @@ Item {
 
             Text {
                 text: root.description
-                font.pixelSize: 11
+                font.pixelSize: 13
                 font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
                 renderType: Text.NativeRendering
                 font.hintingPreference: Font.PreferFullHinting
