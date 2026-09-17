@@ -76,7 +76,8 @@ Item {
                 "authVM":     authVM,
                 "settingsVM": settingsVM,
                 "themeVM":    themeVM,
-                "trayVM":     trayVM
+                "trayVM":     trayVM,
+                "deviceVM":   deviceVM
             })
             settingsLoader.active = true
         } else if (settingsLoader.item) {
