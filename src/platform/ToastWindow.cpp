@@ -149,8 +149,10 @@ Window {
                 anchors.left: parent.left
                 anchors.leftMargin: 12
                 anchors.verticalCenter: parent.verticalCenter
-                color: accentColor
-                opacity: 0.16
+                // 注意：这里不能用 opacity 来做"淡背景"——opacity 会作用于整棵子树，
+                // 把里面的图标一起压到同样透明度，图标会糊得看不清。
+                // 必须用带 alpha 的颜色，让"背景淡、图标实"。
+                color: Qt.rgba(accentColor.r, accentColor.g, accentColor.b, 0.20)
 
                 // 注意：strokeColor/fillColor/strokeWidth/capStyle/joinStyle 都是
                 // ShapePath 的属性，PathSvg 只有 path（+ viewBox）。
@@ -163,7 +165,7 @@ Window {
                     visible: root.toastType === "success"
                     ShapePath {
                         strokeColor: accentColor
-                        strokeWidth: 2.4
+                        strokeWidth: 2.8
                         fillColor: "transparent"
                         capStyle: ShapePath.RoundCap
                         joinStyle: ShapePath.RoundJoin
@@ -177,7 +179,7 @@ Window {
                     visible: root.toastType === "error"
                     ShapePath {
                         strokeColor: accentColor
-                        strokeWidth: 2.4
+                        strokeWidth: 2.8
                         fillColor: "transparent"
                         capStyle: ShapePath.RoundCap
                         PathSvg { path: "M9 4 L9 12" }
@@ -195,7 +197,7 @@ Window {
                     visible: root.toastType === "info"
                     ShapePath {
                         strokeColor: accentColor
-                        strokeWidth: 2.4
+                        strokeWidth: 2.8
                         fillColor: "transparent"
                         capStyle: ShapePath.RoundCap
                         PathSvg { path: "M9 6 L9 11" }

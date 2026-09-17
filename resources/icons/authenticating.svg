@@ -1,34 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- 认证中图标（黄色脉冲） -->
-  <defs>
-    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
-    </linearGradient>
-    <!-- 脉冲动画 -->
-    <style>
-      @keyframes pulse {
-        0%   { opacity: 0.3; r: 28; }
-        50%  { opacity: 0.8; r: 32; }
-        100% { opacity: 0.3; r: 28; }
-      }
-      .pulse-ring { animation: pulse 2s ease-in-out infinite; }
-    </style>
-  </defs>
-  <!-- 脉冲圆环 -->
-  <circle class="pulse-ring" cx="32" cy="32" r="28" fill="url(#grad)" opacity="0.3"/>
-  <!-- WiFi 信号图标 -->
-  <path d="M32 44 a2 2 0 1 0 0-4 a2 2 0 0 0 0 4z" fill="#fbbf24"/>
-  <path d="M24 38 a11 11 0 0 1 16 0" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-  <path d="M18 32 a19 19 0 0 1 28 0" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.7"/>
-  <path d="M12 26 a27 27 0 0 1 40 0" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.4"/>
-  <!-- 旋转加载指示器 -->
-  <style>
-    @keyframes spin {
-      from { transform: rotate(0deg); transform-origin: 32px 32px; }
-      to   { transform: rotate(360deg); transform-origin: 32px 32px; }
-    }
-    .spinner { animation: spin 1.5s linear infinite; }
-  </style>
-  <path class="spinner" d="M32 8 A24 24 0 0 1 56 32" stroke="#fbbf24" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- 认证中（琥珀色）
+       针对托盘 16x16 显示重做：
+       - 纯色填充，无渐变
+       - 去掉 CSS @keyframes 脉冲/旋转动画：QIcon 是静态加载 SVG，
+         CSS 动画根本不会播放，反而增加解析风险
+       - 改用「三个白点」表示进行中，小尺寸下比细圆环更易辨认 -->
+  <circle cx="32" cy="32" r="26" fill="#f59e0b"/>
+  <circle cx="19" cy="32" r="4.5" fill="#ffffff"/>
+  <circle cx="32" cy="32" r="4.5" fill="#ffffff"/>
+  <circle cx="45" cy="32" r="4.5" fill="#ffffff"/>
 </svg>
