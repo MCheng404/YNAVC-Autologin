@@ -42,6 +42,11 @@ public:
     /** 是否正在认证中 */
     bool isBusy() const;
 
+    /** 请求网关释放本机会话（GET http://172.30.255.2/F.htm）。
+     *  用于连续认证失败后清理可能残留的脏会话，再重新认证。
+     *  返回是否成功收到响应。 */
+    bool logoutSession();
+
     /** 当前是否在黑名单时段（03:55-05:05） */
     bool isInBlackout() const;
 

@@ -1,5 +1,7 @@
 #include "NetworkAdapter.h"
 
+#include <QStringList>
+
 #ifdef Q_OS_WIN
 // winsock2 必须在 iphlpapi（间接包含 windows.h）之前
 #include <winsock2.h>
@@ -130,6 +132,30 @@ QString NetworkAdapter::getLocalIp(const QString &gateway)
 #else
     return {};
 #endif
+}
+
+bool NetworkAdapter::isUsableIp(const QString &ip)
+{
+    // 空串不可用
+    if (ip.isEmpty()) return false;
+    // 全 0 地址（未分配）不可用
+    if (ip == QStringLiteral("0.0.0.0")) return false;
+
+    // 纯 QString 解析，不引入新依赖
+    QStringList parts = ip.split(QLatin1Char('.'));
+    if (parts.size() != 4) return false; // 非标准 IPv4，保守判不可用
+
+    bool ok0 = false, ok1 = false;
+    int b0 = parts.at(0).toInt(&ok0);
+    int b1 = parts.at(1).toInt(&ok1);
+    if (!ok0 || !ok1) return false;
+
+    // APIPA：169.254.x.x（DHCP 未就绪）
+    if (b0 == 169 && b1 == 254) return false;
+    // 回环地址：127.x.x.x
+    if (b0 == 127) return false;
+
+    return true;
 }
 
 } // namespace Platform

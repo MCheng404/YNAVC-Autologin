@@ -328,8 +328,10 @@ void App::workerLoop()
             QString mac = Platform::NetworkAdapter::getMacAddress();
             QString ip  = Platform::NetworkAdapter::getLocalIp(
                 QStringLiteral("172.30.255.2"));
-            if (!ip.isEmpty()) {
+            if (Platform::NetworkAdapter::isUsableIp(ip)) {
                 m_authEngine->authenticate(mac, ip);
+            } else {
+                m_logger->log(QStringLiteral("手动登录：IP 不可用(%1)，跳过本次").arg(ip));
             }
         }
 
@@ -349,11 +351,13 @@ void App::workerLoop()
                     QString mac = Platform::NetworkAdapter::getMacAddress();
                     QString ip  = Platform::NetworkAdapter::getLocalIp(
                         QStringLiteral("172.30.255.2"));
-                    if (!ip.isEmpty()) {
+                    if (Platform::NetworkAdapter::isUsableIp(ip)) {
                         m_authEngine->authenticate(mac, ip);
+                        // 仅在实际发起认证后才推进周期；IP 不可用时不推进，留待下一轮重试
+                        m_scheduler->recordTrigger(nowSec);
+                    } else {
+                        m_logger->log(QStringLiteral("定时认证：IP 不可用(%1)，跳过本次，等待重试").arg(ip));
                     }
-                    // 仅在实际发起认证后才推进周期；被 isBusy/黑名单跳过时不推进，留待下一轮重试
-                    m_scheduler->recordTrigger(nowSec);
                 }
             }
         }
@@ -400,13 +404,17 @@ void App::workerLoop()
         QString ip  = Platform::NetworkAdapter::getLocalIp(
             QStringLiteral("172.30.255.2"));
 
-        if (ip.isEmpty()) {
+        if (!Platform::NetworkAdapter::isUsableIp(ip)) {
+            // 区分原因：空串记"无IP"，APIPA/169.254 记"等待 DHCP 就绪"
+            QString reason = ip.isEmpty()
+                ? QStringLiteral("无IP")
+                : QStringLiteral("IP 无效(APIPA/169.254)，等待 DHCP 就绪");
             if (!Platform::NetworkAdapter::hasWlanAdapter()) {
-                m_logger->log(QStringLiteral("无 WLAN 网卡，等待 60s"));
+                m_logger->log(QStringLiteral("%1，等待 60s").arg(reason));
                 interruptibleSleep(60);
             } else {
                 int wait = m_authEngine->getExponentialBackoff(fails);
-                m_logger->log(QStringLiteral("无IP，等待 %1s (%2)").arg(wait).arg(fails));
+                m_logger->log(QStringLiteral("%1，等待 %2s (%3)").arg(reason).arg(wait).arg(fails));
                 interruptibleSleep(wait);
             }
             continue;
@@ -417,6 +425,12 @@ void App::workerLoop()
         QMetaObject::invokeMethod(m_tray, [this]() {
             m_tray->updateIcon(Platform::SystemTray::Status::Authenticating);
         }, Qt::QueuedConnection);
+
+        // 连续失败达到阈值时，先清理本机可能残留的脏会话再重试（第 2/4/6… 次）
+        if (fails >= 2 && fails % 2 == 0) {
+            m_logger->log(QStringLiteral("连续失败 %1 次，先清理本机会话再重试").arg(fails));
+            m_authEngine->logoutSession();
+        }
 
         AuthEngine::AuthResult result = m_authEngine->authenticate(mac, ip);
 

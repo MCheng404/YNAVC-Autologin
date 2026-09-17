@@ -23,6 +23,13 @@ public:
 
     /** 获取连接到指定网关的本地 IP 地址 */
     static QString getLocalIp(const QString &gateway);
+
+    /** IP 是否可用于校园网认证：
+     *  - 空字符串 / "0.0.0.0"           → 不可用
+     *  - 169.254.x.x（DHCP 未就绪时的 APIPA 自动私有地址）→ 不可用
+     *  - 127.x.x.x（回环）              → 不可用
+     *  其余视为可用。 */
+    static bool isUsableIp(const QString &ip);
 };
 
 } // namespace Platform

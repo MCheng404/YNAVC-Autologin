@@ -206,3 +206,29 @@ AuthEngine::AuthResult AuthEngine::authenticate(const QString &mac, const QStrin
     emit authCompleted(result);
     return result;
 }
+
+bool AuthEngine::logoutSession()
+{
+    emit statusMessage(QStringLiteral("清理本机会话：GET http://172.30.255.2/F.htm"));
+
+    // 在当前调用线程创建局部 QNAM（可能被 worker 线程调用，禁止跨线程复用 QNAM）
+    QNetworkAccessManager nam;
+    QEventLoop loop;
+    QNetworkRequest request(QUrl(QStringLiteral("http://172.30.255.2/F.htm")));
+    QTimer::singleShot(3000, &loop, &QEventLoop::quit);
+    QNetworkReply *reply = nam.get(request);
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    // 注意：finished 在连接失败/超时时同样会触发，所以不能用它判定"收到响应"，
+    // 必须看 error() —— 只有 NoError 才算真正拿到了网关的响应。
+    const bool ok = (reply->error() == QNetworkReply::NoError);
+    const QString errStr = reply->errorString();
+    reply->deleteLater();
+
+    if (ok)
+        emit statusMessage(QStringLiteral("本机会话已清理"));
+    else
+        emit statusMessage(QStringLiteral("本机会话清理失败：%1").arg(errStr));
+    return ok;
+}
