@@ -21,11 +21,12 @@ Item {
         color: themeVM.palette.cardBackground
 
         Behavior on color {
-            ColorAnimation { duration: 400; easing.type: Easing.InOutCubic }
+            ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
         }
     }
 
-    // ── 层 1.5：主题色发光阴影（持久）──
+    // ── 层 1.5：主题色发光阴影（持久，低透明）──
+    // 声明于层 1 之后、层 2 之前，自然绘于底之上、边框之下，无需 z
     Rectangle {
         anchors.fill: parent
         anchors.margins: -4
@@ -34,10 +35,9 @@ Item {
         border.color: themeVM.palette.primary
         border.width: 3
         opacity: 0.08
-        z: -1
 
         Behavior on border.color {
-            ColorAnimation { duration: 400; easing.type: Easing.InOutCubic }
+            ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
         }
     }
 
@@ -50,11 +50,11 @@ Item {
         border.width: 0.6
 
         Behavior on border.color {
-            ColorAnimation { duration: 400; easing.type: Easing.InOutCubic }
+            ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
         }
     }
 
-    // ── 层 3：悬停描边 ──
+    // ── 层 3：悬停描边（常态剔除，悬停才参与绘制）──
     Rectangle {
         id: hoverGlow
         anchors.fill: parent
@@ -63,13 +63,14 @@ Item {
         border.color: themeVM.palette.primary
         border.width: 1.5
         opacity: 0
+        visible: opacity > 0 || cardMouse.containsMouse
 
         Behavior on opacity {
-            ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
+            NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
         }
     }
 
-    // ── 层 4：悬停外发光 ──
+    // ── 层 4：悬停外发光（常态剔除，悬停才参与绘制）──
     Rectangle {
         id: outerGlow
         anchors.fill: parent
@@ -79,14 +80,15 @@ Item {
         border.color: themeVM.palette.primary
         border.width: 1
         opacity: 0
-        z: -1
+        visible: opacity > 0 || cardMouse.containsMouse
 
         Behavior on opacity {
-            ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
+            NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
         }
     }
 
     MouseArea {
+        id: cardMouse
         anchors.fill: parent
         hoverEnabled: true
         propagateComposedEvents: true

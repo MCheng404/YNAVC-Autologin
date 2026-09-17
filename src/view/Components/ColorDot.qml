@@ -48,9 +48,9 @@ Item {
         border.width: 1
         opacity: isSelected ? 0.5 : 0
         scale: isSelected ? 1 : 0.85
+        visible: opacity > 0 || isSelected
         Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
         Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
-        z: -1
     }
 
     // 颜色圆点

@@ -71,7 +71,7 @@ GlassCard {
                     radius: 13
                     color: themeVM.palette.primaryContainer
                     opacity: usernameInput.activeFocus ? 1.0 : 0
-                    z: -1
+                    visible: opacity > 0 || usernameInput.activeFocus
                     Behavior on opacity {
                         NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
                     }

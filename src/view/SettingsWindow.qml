@@ -110,7 +110,7 @@ Window {
             z: 0
 
             Behavior on color {
-                ColorAnimation { duration: 400; easing.type: Easing.InOutCubic }
+                ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
             }
         }
 
@@ -122,38 +122,11 @@ Window {
             z: 1
 
             Behavior on color {
-                ColorAnimation { duration: 400; easing.type: Easing.InOutCubic }
+                ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
             }
         }
 
-        // ── 3. 噪点纹理层（模拟磨砂玻璃颗粒感）──
-        Canvas {
-            id: noiseCanvas
-            anchors.fill: parent
-            z: 2
-            opacity: themeVM.isDark ? 0.025 : 0.04
-
-            onPaint: {
-                var ctx = getContext("2d")
-                ctx.clearRect(0, 0, width, height)
-                for (var i = 0; i < 3000; i++) {
-                    var x = Math.random() * width
-                    var y = Math.random() * height
-                    var r = Math.random() * 1.2
-                    ctx.fillStyle = Math.random() > 0.5
-                        ? "rgba(255,255,255," + (Math.random() * 0.5) + ")"
-                        : "rgba(0,0,0," + (Math.random() * 0.3) + ")"
-                    ctx.beginPath()
-                    ctx.arc(x, y, r, 0, Math.PI * 2)
-                    ctx.fill()
-                }
-            }
-
-            // 首次加载后不再重绘（噪点静态）
-            Component.onCompleted: requestPaint()
-        }
-
-        // ── 4. 主题色窗口边框 ──
+        // ── 3. 主题色窗口边框 ──
         Rectangle {
             anchors.fill: parent
             radius: 8
@@ -163,7 +136,7 @@ Window {
             border.width: 1
 
             Behavior on border.color {
-                ColorAnimation { duration: 400; easing.type: Easing.InOutCubic }
+                ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
             }
         }
     }
@@ -217,7 +190,7 @@ Window {
 
                     Behavior on color {
                         enabled: !settingsWindow.isResizing
-                        ColorAnimation { duration: 300; easing.type: Easing.InOutCubic }
+                        ColorAnimation { duration: 300; easing.type: Easing.OutCubic }
                     }
                 }
 
@@ -267,7 +240,7 @@ Window {
 
             Behavior on color {
                 enabled: !settingsWindow.isResizing
-                ColorAnimation { duration: 300; easing.type: Easing.InOutCubic }
+                ColorAnimation { duration: 300; easing.type: Easing.OutCubic }
             }
         }
 
@@ -435,6 +408,7 @@ Window {
                     border.color: themeVM.palette.primary
                     border.width: 2
                     opacity: saveMouseArea.containsMouse ? 0.5 : 0
+                    visible: opacity > 0 || saveMouseArea.containsMouse
                     Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutQuad } }
                 }
 

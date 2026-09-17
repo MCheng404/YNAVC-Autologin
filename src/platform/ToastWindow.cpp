@@ -28,11 +28,13 @@ static void relayoutStack(int position)
     auto it = s_stack.find(position);
     if (it == s_stack.end())
         return;
-    const int step = 132 + 12;   // 卡片最大高度(132) + 间距，避免可变高度时重叠
-    const QList<QQuickWindow*> &list = *it;
-    for (int i = 0; i < list.size(); ++i) {
-        if (list[i])
-            list[i]->setProperty("toastStackOffset", i * step);
+    const int gap = 12;
+    int offset = 0;
+    for (QQuickWindow *w : *it) {
+        if (!w)
+            continue;
+        w->setProperty("toastStackOffset", offset);
+        offset += w->height() + gap;   // 按各通知实际高度累加，间距恒定
     }
 }
 
@@ -83,6 +85,10 @@ Window {
     // 堆叠偏移（由 C++ 运行时按存活列表重排写入），用于平滑归位
     property int toastStackOffset: 0
 
+    // 首帧后才允许堆叠归位动画，避免新窗口创建时 y 跳变触发 Behavior，
+    // 与 fadeIn 的 content.y 滑入叠加成"飘两下"
+    property bool stackAnimReady: false
+
     // 根据设置计算位置
     // 0=右下角, 1=左下角, 2=顶部居中
     x: {
@@ -100,6 +106,7 @@ Window {
 
     // 堆叠归位：偏移变化时平滑过渡（入场滑入由 content.y 负责，互不冲突）
     Behavior on y {
+        enabled: root.stackAnimReady
         NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
     }
 
@@ -122,9 +129,9 @@ Window {
         scale: 0.92
         y: enterOffset
 
-        // 多层柔和阴影（纯色叠加，无渐变）
+        // 多层柔和阴影（纯色叠加，无渐变）：合并为 2 层，去掉中间过渡层以减 overdraw。
+        // 保留最内层(-4,较强,实体接触感)与最外层(-12,最弱最扩散)两个极值，观感基本不变。
         Rectangle { anchors.fill: parent; anchors.margins: -4;  radius: 14; color: "#1f000000"; z: -1 }
-        Rectangle { anchors.fill: parent; anchors.margins: -8;  radius: 18; color: "#14000000"; z: -2 }
         Rectangle { anchors.fill: parent; anchors.margins: -12; radius: 22; color: "#0a000000"; z: -3 }
 
         // 内容卡片（radius=10）
@@ -258,6 +265,8 @@ Window {
                     width: parent.width
                     radius: 1.5
                     color: accentColor
+                    transformOrigin: Item.Left
+                    transform: Scale { id: progressScale; xScale: 1 }
                 }
             }
         }
@@ -267,8 +276,8 @@ Window {
     MouseArea {
         anchors.fill: content
         hoverEnabled: true
-        onEntered: { root.hovering = true; autoCloseTimer.stop(); progressAnim.pause() }
-        onExited:  { root.hovering = false; autoCloseTimer.restart(); progressAnim.resume() }
+        onEntered: { root.hovering = true; progressAnim.pause() }
+        onExited:  { root.hovering = false; progressAnim.resume() }
         onClicked: fadeOut.start()
     }
 
@@ -282,13 +291,17 @@ Window {
         anchors.topMargin: 8
         anchors.rightMargin: 8
         color: themeVM ? themeVM.palette.hoverBackground : "#2a2a3a"
+        // 常态(未 hover)opacity=0 时直接剔除绘制批次；hover 时立即可见，
+        // opacity 过渡(160ms OutQuad)的进出场动画照常播放（淡入时 hovering 已为真，
+        // 淡出时 opacity 仍 >0 故 visible 保持真直到动画归零）。
+        visible: root.hovering || opacity > 0
         opacity: root.hovering ? 1 : 0
         Behavior on opacity { NumberAnimation { duration: 160; easing.type: Easing.OutQuad } }
         MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
-            onEntered: { root.hovering = true; autoCloseTimer.stop(); progressAnim.pause() }
-            onExited:  { root.hovering = false; autoCloseTimer.restart(); progressAnim.resume() }
+            onEntered: { root.hovering = true; progressAnim.pause() }
+            onExited:  { root.hovering = false; progressAnim.resume() }
             onClicked: fadeOut.start()
         }
         Text {
@@ -314,8 +327,8 @@ Window {
     ParallelAnimation {
         id: fadeIn
         NumberAnimation { target: root;    property: "opacity"; from: 0;    to: 1;    duration: 320; easing.type: Easing.OutCubic }
-        NumberAnimation { target: content; property: "scale";   from: 0.92; to: 1;    duration: 340; easing.type: Easing.OutBack }
-        NumberAnimation { target: content; property: "y";       from: enterOffset; to: 0; duration: 340; easing.type: Easing.OutBack }
+        NumberAnimation { target: content; property: "scale";   from: 0.92; to: 1;    duration: 320; easing.type: Easing.OutBack }
+        NumberAnimation { target: content; property: "y";       from: enterOffset; to: 0; duration: 320; easing.type: Easing.OutCubic }
     }
 
     // 离场动画：淡出 + 轻微缩小 + 滑出；停止后关闭窗口（销毁唯一真源）
@@ -327,28 +340,24 @@ Window {
         onStopped: root.close()
     }
 
-    // 进度条收缩动画（与自动关闭计时对齐；hover 时与计时器同步暂停/恢复）
+    // 进度条收缩动画：作为自动关闭的唯一真源（hover 时 pause/resume）；
+    // 走完即触发离场，与进度条完全对齐，不再有双计时器漂移。
+    // 用 transform 缩放替代改 width，避免每帧触发布局重排（父容器/兄弟项不变）。
     NumberAnimation {
         id: progressAnim
-        target: progressBar
-        property: "width"
-        from: progressTrack.width
+        target: progressScale
+        property: "xScale"
+        from: 1
         to: 0
         duration: 4500
         easing.type: Easing.OutQuad
-    }
-
-    // 自动关闭：由 fadeOut 收尾，不再硬杀窗口；hover 暂停/恢复
-    Timer {
-        id: autoCloseTimer
-        interval: 4500
-        running: true
-        onTriggered: fadeOut.start()
+        onStopped: fadeOut.start()
     }
 
     Component.onCompleted: {
         fadeIn.start()
         progressAnim.start()
+        Qt.callLater(function() { root.stackAnimReady = true })   // 首帧之后再允许堆叠动画
     }
 }
 )";
@@ -394,12 +403,18 @@ Window {
     s_stack[m_position].append(m_window);
     relayoutStack(m_position);
 
+    // 窗口高度由内容决定、稳定后才会正确；高度变化（行数不同）时全量重排，
+    // 保证任意高度的通知间距恒定。改 y 不影响 height，不会递归。
+    QObject::connect(m_window, &QWindow::heightChanged, this, [position]() {
+        relayoutStack(position);
+    });
+
     // 显示窗口
     m_window->show();
     m_window->raise();
     m_window->requestActivate();
 
-    // 动画为唯一真源：QML Timer(4500) 触发 fadeOut，fadeOut.onStopped -> root.close()
+    // 动画为唯一真源：progressAnim(4500) 走完触发 fadeOut，fadeOut.onStopped -> root.close()
     // -> QQuickWindow::closing -> 释放窗口/引擎/本对象。不再硬杀窗口（修复双计时器 race）。
     auto dispose = [this]() {
         if (m_disposed)

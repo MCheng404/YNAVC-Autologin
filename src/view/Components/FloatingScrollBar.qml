@@ -84,12 +84,12 @@ Item {
         // 滑块外发光（悬停时主题色光晕）
         Rectangle {
             anchors.centerIn: handle
-            width: handle.width + 8
+            width: handle.width * handleScale.xScale + 8
             height: handle.height + 8
             radius: handleRadius + 4
             color: themeVM.palette.primary
             opacity: handleMouseArea.containsMouse ? 0.3 : 0
-            z: -1
+            visible: opacity > 0 || handleMouseArea.containsMouse
 
             Behavior on opacity {
                 NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
@@ -100,16 +100,22 @@ Item {
         Rectangle {
             id: handle
             anchors.centerIn: parent
-            width: (handleMouseArea.containsMouse || handleMouseArea.pressed) ? scrollBarRoot.thickness + 3 : scrollBarRoot.thickness
+            width: scrollBarRoot.thickness
             height: parent.height
             radius: handleRadius
             color: handleMouseArea.containsMouse || handleMouseArea.pressed ? handleHoverColor : handleColor
+            transform: Scale {
+                id: handleScale
+                origin.x: handle.width / 2
+                origin.y: handle.height / 2
+                xScale: (handleMouseArea.containsMouse || handleMouseArea.pressed) ? (scrollBarRoot.thickness + 3) / scrollBarRoot.thickness : 1
+                Behavior on xScale {
+                    NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
+                }
+            }
 
             Behavior on color {
                 ColorAnimation { duration: 150; easing.type: Easing.OutQuad }
-            }
-            Behavior on width {
-                NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
             }
         }
 
