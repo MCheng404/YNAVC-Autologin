@@ -118,7 +118,7 @@ bool App::initialize()
     ToastWindow::setThemeViewModel(m_themeVM);
 
     // 4. 初始化日志
-    m_logger->log(QStringLiteral("AutoLogin v2.13 启动"));
+    m_logger->log(QStringLiteral("AutoLogin v2.6.1 启动"));
 
     // 5. 设置 ViewModel 绑定
     setupViewModelBindings();

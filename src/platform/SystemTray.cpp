@@ -36,8 +36,12 @@ SystemTray::~SystemTray()
 
 void SystemTray::updateIcon(Status status)
 {
-    // 状态未变化则跳过全量重建菜单（每 30s 状态刷新时不再频繁重建 7 个 QAction）
-    if (status == m_status) return;
+    // 状态未变化则跳过全量重建菜单（每 30s 状态刷新时不再频繁重建 7 个 QAction）。
+    // 注意：首次调用必须执行 —— 构造时 m_status 初值即为 Disconnected，
+    // 若按“未变化”直接返回，setIcon 永远不会被调用，托盘图标会是空白。
+    if (m_statusInitialized && status == m_status)
+        return;
+    m_statusInitialized = true;
     m_status = status;
     QString iconName;
     switch (status) {

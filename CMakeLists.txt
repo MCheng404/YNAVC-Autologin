@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(AutoLogin VERSION 2.13 LANGUAGES CXX)
+project(AutoLogin VERSION 2.6.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -105,7 +105,7 @@ endif()
 # QML 模块注册（使用 qt6_add_qml_module 管理 QML 文件）
 qt6_add_qml_module(${PROJECT_NAME}
     URI AutoLogin
-    VERSION 2.13
+    VERSION 2.6.1
     QML_FILES
         src/view/Main.qml
         src/view/SettingsWindow.qml

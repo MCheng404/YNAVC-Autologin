@@ -69,6 +69,7 @@ private:
 
     QMenu *m_menu = nullptr;
     Status m_status = Status::Disconnected;
+    bool   m_statusInitialized = false;   // 首次 updateIcon 必须执行，否则初始图标不会被设置
 };
 
 } // namespace Platform
