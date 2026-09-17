@@ -20,6 +20,7 @@ set(SOURCES
     src/App.cpp
     # Platform
     src/platform/NetworkAdapter.cpp
+    src/platform/SelfServiceClient.cpp
     src/platform/Registry.cpp
     src/platform/HotspotManager.cpp
     src/platform/Notification.cpp
@@ -33,6 +34,7 @@ set(SOURCES
     src/model/Settings.cpp
     # ViewModel
     src/viewmodel/AuthViewModel.cpp
+    src/viewmodel/DeviceViewModel.cpp
     src/viewmodel/SettingsViewModel.cpp
     src/viewmodel/TrayViewModel.cpp
     src/viewmodel/ThemeViewModel.cpp
@@ -44,6 +46,7 @@ set(HEADERS
     # Platform
     src/platform/Win32Defs.h
     src/platform/NetworkAdapter.h
+    src/platform/SelfServiceClient.h
     src/platform/Registry.h
     src/platform/HotspotManager.h
     src/platform/Notification.h
@@ -56,6 +59,7 @@ set(HEADERS
     src/model/Settings.h
     # ViewModel
     src/viewmodel/AuthViewModel.h
+    src/viewmodel/DeviceViewModel.h
     src/viewmodel/SettingsViewModel.h
     src/viewmodel/TrayViewModel.h
     src/viewmodel/ThemeViewModel.h
@@ -115,6 +119,7 @@ qt6_add_qml_module(${PROJECT_NAME}
         src/view/Cards/ScheduleCard.qml
         src/view/Cards/AccountCard.qml
         src/view/Cards/AccentColorCard.qml
+        src/view/Cards/DeviceCard.qml
         src/view/Components/SwitchToggle.qml
         src/view/Components/ThemeToggle.qml
         src/view/Components/CardSpinBox.qml

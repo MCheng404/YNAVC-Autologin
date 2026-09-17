@@ -6,6 +6,7 @@
 
 // 前向声明
 class AuthEngine;
+class DeviceViewModel;
 class ConnectivityChecker;
 class Scheduler;
 class Logger;
@@ -78,6 +79,7 @@ private:
 
     // ViewModel 层
     AuthViewModel       *m_authVM        = nullptr;
+    DeviceViewModel     *m_deviceVM      = nullptr;
     SettingsViewModel   *m_settingsVM     = nullptr;
     TrayViewModel       *m_trayVM        = nullptr;
     ThemeViewModel      *m_themeVM       = nullptr;

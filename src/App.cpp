@@ -5,6 +5,7 @@
 #include "model/Logger.h"
 #include "model/Settings.h"
 #include "viewmodel/AuthViewModel.h"
+#include "viewmodel/DeviceViewModel.h"
 #include "viewmodel/SettingsViewModel.h"
 #include "viewmodel/TrayViewModel.h"
 #include "viewmodel/ThemeViewModel.h"
@@ -51,6 +52,7 @@ App::~App()
     // 释放顺序：ViewModel → Model → Platform
     delete m_trayVM;
     delete m_themeVM;
+    delete m_deviceVM;
     delete m_settingsVM;
     delete m_authVM;
 
@@ -113,6 +115,8 @@ bool App::initialize()
     m_settingsVM = new SettingsViewModel(m_settings, this);
     m_trayVM     = new TrayViewModel(m_authEngine, m_settings, m_scheduler, this);
     m_themeVM    = new ThemeViewModel(m_settings, this);
+    m_deviceVM   = new DeviceViewModel(m_settings, this);
+    m_deviceVM->setLogger(m_logger);     // 接入项目日志（批量踢除统计写入日志）
 
     // 通知窗口可能在任何 QML 窗口创建前弹出，提前注入主题 ViewModel
     ToastWindow::setThemeViewModel(m_themeVM);
@@ -159,6 +163,7 @@ int App::run()
 
     // 注入 ViewModel 到 QML 上下文
     engine.rootContext()->setContextProperty(QStringLiteral("authVM"),     m_authVM);
+    engine.rootContext()->setContextProperty(QStringLiteral("deviceVM"),   m_deviceVM);
     engine.rootContext()->setContextProperty(QStringLiteral("settingsVM"), m_settingsVM);
     engine.rootContext()->setContextProperty(QStringLiteral("trayVM"),     m_trayVM);
     engine.rootContext()->setContextProperty(QStringLiteral("themeVM"),    m_themeVM);

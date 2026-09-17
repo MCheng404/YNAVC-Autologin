@@ -32,6 +32,7 @@ Window {
     required property var settingsVM
     required property var themeVM
     required property var trayVM
+    required property var deviceVM
 
     // 居中显示
     x: (Screen.width - width) / 2
@@ -320,6 +321,12 @@ Window {
                         AccountCard {
                             Layout.fillWidth: true
                             settingsVM: settingsWindow.settingsVM
+                            themeVM: settingsWindow.themeVM
+                        }
+
+                        DeviceCard {
+                            Layout.fillWidth: true
+                            deviceVM: settingsWindow.deviceVM
                             themeVM: settingsWindow.themeVM
                         }
 
