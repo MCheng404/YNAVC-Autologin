@@ -33,8 +33,6 @@ GlassCard {
             font.capitalization: Font.AllUppercase
             font.letterSpacing: 1.2
             font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-            renderType: Text.NativeRendering
-            font.hintingPreference: Font.PreferFullHinting
             color: themeVM.palette.textTertiary
             Layout.leftMargin: 4
         }
@@ -48,8 +46,6 @@ GlassCard {
                 text: "用户名"
                 font.pixelSize: 11
                 font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                renderType: Text.NativeRendering
-                font.hintingPreference: Font.PreferFullHinting
                 font.capitalization: Font.AllUppercase
                 font.letterSpacing: 0.5
                 color: themeVM.palette.textSecondary
@@ -94,8 +90,6 @@ GlassCard {
                     verticalAlignment: Text.AlignVCenter
                     font.pixelSize: 14
                     font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
-                    renderType: Text.NativeRendering
-                    font.hintingPreference: Font.PreferFullHinting
                     color: themeVM.palette.textPrimary
                     text: settingsVM.username
                     clip: true
@@ -112,8 +106,6 @@ GlassCard {
                     verticalAlignment: Text.AlignVCenter
                     font.pixelSize: 14
                     font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
-                    renderType: Text.NativeRendering
-                    font.hintingPreference: Font.PreferFullHinting
                     color: themeVM.palette.textTertiary
                     text: "校园网账号（自动补@unicom）"
                     visible: usernameInput.text.length === 0 && !usernameInput.activeFocus
@@ -132,8 +124,6 @@ GlassCard {
                 text: "密码"
                 font.pixelSize: 11
                 font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                renderType: Text.NativeRendering
-                font.hintingPreference: Font.PreferFullHinting
                 font.capitalization: Font.AllUppercase
                 font.letterSpacing: 0.5
                 color: themeVM.palette.textSecondary
@@ -178,8 +168,6 @@ GlassCard {
                     verticalAlignment: Text.AlignVCenter
                     font.pixelSize: 14
                     font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
-                    renderType: Text.NativeRendering
-                    font.hintingPreference: Font.PreferFullHinting
                     color: themeVM.palette.textPrimary
                     text: settingsVM.password
                     echoMode: TextInput.Password
@@ -197,8 +185,6 @@ GlassCard {
                     verticalAlignment: Text.AlignVCenter
                     font.pixelSize: 14
                     font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
-                    renderType: Text.NativeRendering
-                    font.hintingPreference: Font.PreferFullHinting
                     color: themeVM.palette.textTertiary
                     text: "请输入校园网密码"
                     visible: passwordInput.text.length === 0 && !passwordInput.activeFocus

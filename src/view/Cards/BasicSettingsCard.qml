@@ -32,8 +32,6 @@ GlassCard {
             font.capitalization: Font.AllUppercase
             font.letterSpacing: 1.2
             font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-            renderType: Text.NativeRendering
-            font.hintingPreference: Font.PreferFullHinting
             color: themeVM.palette.textTertiary
             Layout.leftMargin: 4
         }
@@ -88,8 +86,6 @@ GlassCard {
                 font.capitalization: Font.AllUppercase
                 font.letterSpacing: 0.5
                 font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                renderType: Text.NativeRendering
-                font.hintingPreference: Font.PreferFullHinting
                 color: themeVM.palette.textSecondary
                 Layout.leftMargin: 4
             }

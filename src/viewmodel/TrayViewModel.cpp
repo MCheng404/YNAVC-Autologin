@@ -65,13 +65,8 @@ void TrayViewModel::onLogin()
     setIconSource(QStringLiteral("authenticating"));
     setTooltip(QStringLiteral("校园网自动登录 - 认证中..."));
 
-    QString mac = Platform::NetworkAdapter::getMacAddress();
-    QString ip  = Platform::NetworkAdapter::getLocalIp(
-        QStringLiteral("172.30.255.2"));
-
-    if (!ip.isEmpty()) {
-        m_authEngine->authenticate(mac, ip);
-    }
+    // 投递到 worker 线程执行认证，避免冻结 UI 线程
+    emit manualLoginRequested();
 }
 
 void TrayViewModel::onCleanLog()

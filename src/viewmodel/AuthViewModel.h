@@ -53,6 +53,9 @@ signals:
     void statusTextChanged();
     void isAuthenticatingChanged();
 
+    /** 请求手动登录（投递到 worker 线程执行，避免冻结 UI） */
+    void manualLoginRequested();
+
 private:
     void setAuthState(AuthState state);
     void setStatusText(const QString &text);

@@ -133,8 +133,6 @@ GlassCard {
             font.capitalization: Font.AllUppercase
             font.letterSpacing: 1.2
             font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-            renderType: Text.NativeRendering
-            font.hintingPreference: Font.PreferFullHinting
             color: themeVM.palette.textTertiary
             Layout.leftMargin: 4
         }
@@ -157,8 +155,6 @@ GlassCard {
                 font.pixelSize: 12
                 font.weight: Font.Normal
                 font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                renderType: Text.NativeRendering
-                font.hintingPreference: Font.PreferFullHinting
                 color: themeVM.palette.textSecondary
             }
         }
@@ -173,8 +169,6 @@ GlassCard {
                 font.pixelSize: 34
                 font.weight: Font.Light
                 font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
-                renderType: Text.NativeRendering
-                font.hintingPreference: Font.PreferFullHinting
                 color: themeVM.palette.textPrimary
                 Layout.alignment: Qt.AlignHCenter
             }
@@ -184,8 +178,6 @@ GlassCard {
                 font.pixelSize: 12
                 font.weight: Font.Normal
                 font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                renderType: Text.NativeRendering
-                font.hintingPreference: Font.PreferFullHinting
                 color: themeVM.palette.textTertiary
                 Layout.alignment: Qt.AlignHCenter
             }
@@ -213,7 +205,6 @@ GlassCard {
                     font.pixelSize: 11
                     font.weight: Font.Normal
                     font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                    renderType: Text.NativeRendering
                     color: themeVM.palette.textTertiary
                     Layout.alignment: Qt.AlignHCenter
                 }
@@ -223,7 +214,6 @@ GlassCard {
                     font.pixelSize: 18
                     font.weight: Font.Medium
                     font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
-                    renderType: Text.NativeRendering
                     color: themeVM.palette.textSecondary
                     Layout.alignment: Qt.AlignHCenter
                 }
@@ -248,7 +238,6 @@ GlassCard {
                     font.pixelSize: 11
                     font.weight: Font.Normal
                     font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                    renderType: Text.NativeRendering
                     color: themeVM.palette.textTertiary
                     Layout.alignment: Qt.AlignHCenter
                 }
@@ -258,7 +247,6 @@ GlassCard {
                     font.pixelSize: 18
                     font.weight: Font.Medium
                     font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
-                    renderType: Text.NativeRendering
                     color: themeVM.palette.textSecondary
                     Layout.alignment: Qt.AlignHCenter
                 }
@@ -276,8 +264,6 @@ GlassCard {
                 font.pixelSize: 11
                 font.weight: Font.Normal
                 font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                renderType: Text.NativeRendering
-                font.hintingPreference: Font.PreferFullHinting
                 color: themeVM.palette.textTertiary
             }
 
@@ -288,8 +274,6 @@ GlassCard {
                 font.pixelSize: 14
                 font.weight: Font.Medium
                 font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
-                renderType: Text.NativeRendering
-                font.hintingPreference: Font.PreferFullHinting
                 color: themeVM.palette.textSecondary
             }
         }

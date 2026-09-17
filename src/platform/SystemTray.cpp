@@ -36,6 +36,8 @@ SystemTray::~SystemTray()
 
 void SystemTray::updateIcon(Status status)
 {
+    // 状态未变化则跳过全量重建菜单（每 30s 状态刷新时不再频繁重建 7 个 QAction）
+    if (status == m_status) return;
     m_status = status;
     QString iconName;
     switch (status) {

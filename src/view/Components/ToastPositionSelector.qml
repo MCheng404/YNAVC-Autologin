@@ -9,9 +9,16 @@ import "../Components"
  *
  * 视觉优化（保持「屏幕位置图示」核心交互不变）：
  * - 顶部加极简标题条、底部加 dock 暗示，增强「这是屏幕」辨识度（纯色，无渐变）
- * - toast 示意块改为「圆点 + 主/副标题两线」，比例更接近真实通知
+ * - toast 示意块改为「左侧类型色条 + 主/副标题两线」，比例更接近真实通知卡片
+ * - 增加纯色半透明阴影叠加，营造浮起感（无渐变）
  * - 未选中占位透明度由 0.5 提升到 0.7，提升可辨识度
  * - 选中切换给示意块加 Easing.OutBack 轻回弹（约 200ms）
+ *
+ * 进场动画（核心）：不同位置进场方向不同，与真实 ToastWindow 一致
+ * - 位置 0/1（右下 / 左下）：从下方滑入（y +24 → 0）
+ * - 位置 2（顶部居中）：从上方滑入（y −24 → 0）
+ * 选中槽内 toastChip 播放：opacity 0→1、scale 0.92→1（OutBack）、y 从 ±24 滑到 0（OutCubic）
+ * 选中后每 2.8s 自动循环重播一次（Timer 仅在「该槽被选中 且 组件可见」时 running）
  */
 Rectangle {
     id: root
@@ -103,9 +110,33 @@ Rectangle {
             anchors.topMargin: anchorTop ? 16 : 8
 
             readonly property bool isSelected: root.position === pos
+            // 静止时 y 偏移量：位置 2（顶部）从上方 −24 滑入，其余从下方 +24 滑入
+            readonly property int enterY: pos === 2 ? -24 : 24
             property bool hovered: false
+
+            // 播放选中槽位的进场动画演示（方向随位置变化）
+            function playEntrance() {
+                toastChip.scale = 0.92
+                toastChip.opacity = 0
+                toastChip.y = 3 + enterY
+                toastBounce.restart()   // scale 轻回弹（OutBack）
+                toastEnter.restart()    // opacity + y 方向滑入（OutCubic）
+            }
+
+            // 监听必须挂在属性所属对象（slot）上，避免 "Cannot assign to non-existent property"
             onIsSelectedChanged: {
-                if (isSelected) toastBounce.restart()
+                if (isSelected) playEntrance()
+                else {
+                    toastChip.opacity = hovered ? 0.95 : 0.7
+                    toastChip.scale = 1.0
+                    toastChip.y = 3
+                }
+            }
+            onHoveredChanged: {
+                if (!isSelected) toastChip.opacity = hovered ? 0.95 : 0.7
+            }
+            Component.onCompleted: {
+                if (isSelected) playEntrance()
             }
 
             // ── 点击热区（略大于示意块）──
@@ -120,12 +151,25 @@ Rectangle {
                 onClicked: root.position = pos
             }
 
+            // ── 纯色半透明阴影（浮起感，无渐变）── 需置于 toastChip 之前以便位于其下
+            Rectangle {
+                id: toastShadow
+                width: toastChip.width
+                height: toastChip.height
+                radius: 6
+                x: toastChip.x + 1.5
+                y: toastChip.y + 1.5
+                color: "#000000"
+                opacity: isSelected ? 0.22 : 0.10
+                Behavior on opacity { NumberAnimation { duration: 150 } }
+            }
+
             // ── toast 示意块 ──
             Rectangle {
                 id: toastChip
                 width: parent.width
                 height: 28
-                anchors.verticalCenter: parent.verticalCenter
+                y: 3
                 radius: 6
 
                 color: {
@@ -139,58 +183,61 @@ Rectangle {
                     return root.themePalette ? root.themePalette.outline : "#555"
                 }
                 border.width: isSelected ? 1 : 0.6
-                opacity: isSelected ? 1.0 : (hovered ? 0.95 : 0.7)
+                opacity: 0.7
 
                 Behavior on color { ColorAnimation { duration: 150 } }
                 Behavior on border.color { ColorAnimation { duration: 150 } }
-                Behavior on opacity { NumberAnimation { duration: 150 } }
 
-                // 选中切换轻回弹（先放大再回落，约 200ms）
+                // 选中切换轻回弹（先放大再回落，约 200ms）—— 保留
                 SequentialAnimation {
                     id: toastBounce
                     NumberAnimation { target: toastChip; property: "scale"; to: 1.06; duration: 90;  easing.type: Easing.OutBack }
                     NumberAnimation { target: toastChip; property: "scale"; to: 1.0;  duration: 110; easing.type: Easing.OutBack }
                 }
-                // ── toast 内容：图标点 + 主/副标题两线（更接近真实通知比例）──
-                Row {
+                // 进场方向滑入 + 淡入（与 ToastWindow 一致；约 320ms，OutCubic）
+                ParallelAnimation {
+                    id: toastEnter
+                    NumberAnimation { target: toastChip; property: "opacity"; from: 0; to: 1.0; duration: 320; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: toastChip; property: "y";      to: 3;       duration: 320; easing.type: Easing.OutCubic }
+                }
+
+                // ── toast 内容：左侧类型色条 + 主/副标题（更接近真实通知卡片）──
+                // 左侧类型色条
+                Rectangle {
+                    id: accentBar
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 3
+                    height: parent.height - 10
+                    radius: 1.5
+                    color: isSelected
+                           ? (root.themePalette ? root.themePalette.success : "#3fb950")
+                           : (root.themePalette ? root.themePalette.outline : "#555")
+                    opacity: isSelected ? 0.9 : 0.4
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                }
+
+                // 主标题 + 副标题
+                Column {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
-                    anchors.leftMargin: 6
-                    spacing: 5
-
-                    // 图标示意圆点
+                    anchors.leftMargin: 9
+                    spacing: 3
                     Rectangle {
-                        width: 8; height: 8; radius: 4
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: {
-                            if (isSelected) return root.themePalette ? root.themePalette.onPrimary : "#fff"
-                            return root.themePalette ? root.themePalette.textTertiary : "#888"
-                        }
+                        width: 30; height: 4; radius: 2
+                        color: isSelected
+                               ? (root.themePalette ? root.themePalette.onPrimary : "#fff")
+                               : (root.themePalette ? root.themePalette.textTertiary : "#888")
+                        opacity: isSelected ? 0.95 : 0.6
                         Behavior on color { ColorAnimation { duration: 150 } }
                     }
-
-                    // 主标题 + 副标题
-                    Column {
-                        anchors.verticalCenter: parent.verticalCenter
-                        spacing: 3
-                        Rectangle {
-                            width: 34; height: 4; radius: 2
-                            color: {
-                                if (isSelected) return root.themePalette ? root.themePalette.onPrimary : "#fff"
-                                return root.themePalette ? root.themePalette.textTertiary : "#888"
-                            }
-                            opacity: isSelected ? 0.95 : 0.65
-                            Behavior on color { ColorAnimation { duration: 150 } }
-                        }
-                        Rectangle {
-                            width: 22; height: 3; radius: 1.5
-                            color: {
-                                if (isSelected) return root.themePalette ? root.themePalette.onPrimary : "#fff"
-                                return root.themePalette ? root.themePalette.textTertiary : "#888"
-                            }
-                            opacity: isSelected ? 0.7 : 0.5
-                            Behavior on color { ColorAnimation { duration: 150 } }
-                        }
+                    Rectangle {
+                        width: 18; height: 3; radius: 1.5
+                        color: isSelected
+                               ? (root.themePalette ? root.themePalette.onPrimary : "#fff")
+                               : (root.themePalette ? root.themePalette.textTertiary : "#888")
+                        opacity: isSelected ? 0.65 : 0.45
+                        Behavior on color { ColorAnimation { duration: 150 } }
                     }
                 }
             }
@@ -206,6 +253,15 @@ Rectangle {
                 anchors.top: anchorTop ? parent.bottom : undefined
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.margins: 2
+            }
+
+            // ── 循环演示：选中且可见时每 2.8s 重播一次进场动画 ──
+            Timer {
+                id: loopTimer
+                interval: 2800
+                repeat: true
+                running: slot.isSelected && root.isEnabled && root.visible
+                onTriggered: playEntrance()
             }
         }
     }

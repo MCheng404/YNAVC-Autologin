@@ -89,4 +89,5 @@ private:
     // Worker Thread
     QThread            *m_workerThread   = nullptr;
     std::atomic<bool>   m_running{false};
+    std::atomic<bool>   m_manualAuthRequested{false};  // UI 线程置位，worker 线程轮询执行手动登录
 };

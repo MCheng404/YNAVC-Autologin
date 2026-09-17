@@ -288,8 +288,12 @@ bool HotspotManager::start()
             continue;
         }
         logInfo("热点：StartTetheringAsync 已调用，等待完成...");
-        processTetheringResult(pAsyncOp);
-        started = true;
+        int finalState = processTetheringResult(pAsyncOp);
+        if (finalState == 2) {
+            started = true;
+        } else {
+            logWarn(QStringLiteral("热点：开启后状态异常(%1)，视为开启失败").arg(finalState));
+        }
     }
 
 cleanup:

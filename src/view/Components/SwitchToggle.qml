@@ -42,8 +42,6 @@ Item {
                 text: root.title
                 font.pixelSize: 14
                 font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                renderType: Text.NativeRendering
-                font.hintingPreference: Font.PreferFullHinting
                 color: themeVM.palette.textPrimary
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
@@ -57,8 +55,6 @@ Item {
                 text: root.description
                 font.pixelSize: 13
                 font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                renderType: Text.NativeRendering
-                font.hintingPreference: Font.PreferFullHinting
                 color: themeVM.palette.textTertiary
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap

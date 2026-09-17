@@ -77,8 +77,6 @@ Item {
                 font.pixelSize: 13
                 font.weight: Font.Medium
                 font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                renderType: Text.NativeRendering
-                font.hintingPreference: Font.PreferFullHinting
                 color: root._textColor
 
                 Behavior on color {

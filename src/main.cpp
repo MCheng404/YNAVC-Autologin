@@ -34,6 +34,14 @@ int main(int argc, char *argv[])
         Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif
 
+    // 全局改用 Qt 自身的字体光栅化（带抗锯齿）。
+    // Windows 上 QQuickWindow 默认是 NativeTextRendering，而 Qt 官方明确警告：
+    // 原生渲染与 scale 变换结合会 "poor and sometimes pixelated" ——
+    // 本项目卡片 hover、窗口开合、通知进场都带 scale 动画，
+    // 原生位图被逐帧重采样正是字体锯齿的来源。
+    // QML 里已删除全部显式 renderType / hintingPreference，统一走这里。
+    QQuickWindow::setTextRenderType(QQuickWindow::QtTextRendering);
+
     // 安装消息处理器，所有 Qt/QML 警告写入日志文件
     g_debugLog.setFileName(QStringLiteral("debug.log"));
     g_debugLog.open(QIODevice::WriteOnly | QIODevice::Append);

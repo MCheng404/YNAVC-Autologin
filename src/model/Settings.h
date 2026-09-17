@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QReadWriteLock>   // 提供 QReadWriteLock / QWriteLocker / QReadLocker
 #include "platform/Registry.h"
 
 /**
@@ -94,4 +95,6 @@ private:
     int     m_theme         = 2; // 0=Dark, 1=Light, 2=System
     int     m_accentColor   = 0;  // 0-15 主题色索引（默认粉色 #ec4899）
     int     m_toastPosition = 0;  // 0=右下, 1=左下, 2=顶部居中
+
+    mutable QReadWriteLock m_lock;  // 保护设置读写，防止 worker/UI 线程 QString 数据竞争
 };

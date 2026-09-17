@@ -1,10 +1,14 @@
 #include "Scheduler.h"
 #include "Settings.h"
 
+#include <QRandomGenerator>
+
 Scheduler::Scheduler(Settings *settings, QObject *parent)
     : QObject(parent)
     , m_settings(settings)
 {
+    // 每个周期开始摇一次抖动（±5 分钟）
+    m_jitterSec = QRandomGenerator::global()->bounded(-300, 301);
 }
 
 bool Scheduler::shouldTrigger(qint64 nowSec)
@@ -18,6 +22,8 @@ bool Scheduler::shouldTrigger(qint64 nowSec)
 void Scheduler::recordTrigger(qint64 ts)
 {
     m_lastSchedAuth = ts;
+    // 进入下一周期，重新摇一次抖动（±5 分钟，每个周期只摇一次）
+    m_jitterSec = QRandomGenerator::global()->bounded(-300, 301);
 }
 
 qint64 Scheduler::nextTriggerTime() const

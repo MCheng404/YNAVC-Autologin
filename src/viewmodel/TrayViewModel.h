@@ -62,6 +62,9 @@ signals:
     /** 请求打开设置窗口（QML 直接监听） */
     void openSettingsRequested();
 
+    /** 请求手动登录（投递到 worker 线程执行，避免冻结 UI） */
+    void manualLoginRequested();
+
 private:
     void setIconSource(const QString &source);
     void setTooltip(const QString &tip);

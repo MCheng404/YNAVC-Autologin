@@ -80,8 +80,6 @@ Rectangle {
             font.capitalization: Font.AllUppercase
             font.letterSpacing: 0.5
             font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-            renderType: Text.NativeRendering
-            font.hintingPreference: Font.PreferFullHinting
             color: themeVM.palette.textTertiary
         }
 
@@ -151,8 +149,6 @@ Rectangle {
                 font.pixelSize: 24
                 font.weight: Font.DemiBold
                 font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
-                renderType: Text.NativeRendering
-                font.hintingPreference: Font.PreferFullHinting
                 color: themeVM.palette.textPrimary
             }
 
@@ -213,8 +209,6 @@ Rectangle {
             text: root.unit
             font.pixelSize: 13
             font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-            renderType: Text.NativeRendering
-            font.hintingPreference: Font.PreferFullHinting
             color: themeVM.palette.textTertiary
         }
     }

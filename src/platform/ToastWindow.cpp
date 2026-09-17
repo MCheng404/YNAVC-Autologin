@@ -226,7 +226,6 @@ Window {
                     font.weight: Font.Medium
                     font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
                     color: themeVM ? themeVM.palette.textPrimary : "#f1f5f9"
-                    renderType: Text.NativeRendering
                     elide: Text.ElideRight
                 }
 
@@ -237,7 +236,6 @@ Window {
                     font.pixelSize: 13
                     font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
                     color: themeVM ? themeVM.palette.textSecondary : "#94a3b8"
-                    renderType: Text.NativeRendering
                     elide: Text.ElideRight
                     maximumLineCount: 2
                     wrapMode: Text.WordWrap

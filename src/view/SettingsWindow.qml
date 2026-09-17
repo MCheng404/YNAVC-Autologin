@@ -182,8 +182,6 @@ Window {
                     font.pixelSize: 24
                     font.weight: Font.Bold
                     font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                    renderType: Text.NativeRendering
-                    font.hintingPreference: Font.PreferFullHinting
                     color: themeVM.palette.textPrimary
                     shadowOpacity: 0.3
                     Layout.alignment: Qt.AlignVCenter
@@ -369,8 +367,6 @@ Window {
                     font.pixelSize: 14
                     font.weight: Font.Medium
                     font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                    renderType: Text.NativeRendering
-                    font.hintingPreference: Font.PreferFullHinting
                     color: themeVM.palette.textSecondary
                 }
 
@@ -418,8 +414,6 @@ Window {
                     font.pixelSize: 14
                     font.weight: Font.Medium
                     font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                    renderType: Text.NativeRendering
-                    font.hintingPreference: Font.PreferFullHinting
                     color: themeVM.palette.onPrimary
                 }
 

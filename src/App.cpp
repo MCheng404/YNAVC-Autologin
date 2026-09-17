@@ -296,6 +296,14 @@ void App::setupViewModelBindings()
     connect(m_settings, &Settings::notificationsChanged, this, [this]() {
         Platform::Notification::setEnabled(m_settings->notifications());
     });
+
+    // 手动登录：UI 线程信号 → 置位原子标志，由 worker 线程轮询执行（避免 UI 冻结）
+    connect(m_trayVM, &TrayViewModel::manualLoginRequested, this, [this]() {
+        m_manualAuthRequested.store(true);
+    });
+    connect(m_authVM, &AuthViewModel::manualLoginRequested, this, [this]() {
+        m_manualAuthRequested.store(true);
+    });
 }
 
 void App::workerLoop()
@@ -310,6 +318,21 @@ void App::workerLoop()
     }, Qt::QueuedConnection);
 
     while (m_running.load()) {
+        // === 手动登录请求（UI 线程投递，改在 worker 线程执行，避免冻结 UI） ===
+        if (m_manualAuthRequested.load() && !m_authEngine->isBusy()) {
+            m_manualAuthRequested = false;
+            m_logger->log(QStringLiteral("手动登录触发（worker 线程执行）"));
+            QMetaObject::invokeMethod(m_tray, [this]() {
+                m_tray->updateIcon(Platform::SystemTray::Status::Authenticating);
+            }, Qt::QueuedConnection);
+            QString mac = Platform::NetworkAdapter::getMacAddress();
+            QString ip  = Platform::NetworkAdapter::getLocalIp(
+                QStringLiteral("172.30.255.2"));
+            if (!ip.isEmpty()) {
+                m_authEngine->authenticate(mac, ip);
+            }
+        }
+
         // === 定时认证检查（仅在联网状态下触发） ===
         if (m_settings->schedEnabled()) {
             qint64 nowSec = QDateTime::currentSecsSinceEpoch();
@@ -329,8 +352,9 @@ void App::workerLoop()
                     if (!ip.isEmpty()) {
                         m_authEngine->authenticate(mac, ip);
                     }
+                    // 仅在实际发起认证后才推进周期；被 isBusy/黑名单跳过时不推进，留待下一轮重试
+                    m_scheduler->recordTrigger(nowSec);
                 }
-                m_scheduler->recordTrigger(nowSec);
             }
         }
 
@@ -430,6 +454,8 @@ void App::workerLoop()
 void App::interruptibleSleep(int seconds)
 {
     for (int i = 0; i < seconds && m_running.load(); ++i) {
+        // 手动登录请求到达时提前唤醒（最多延迟约 1s），避免在 30s 休眠中卡住
+        if (m_manualAuthRequested.load()) return;
         QThread::sleep(1);
     }
 }

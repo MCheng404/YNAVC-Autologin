@@ -51,8 +51,6 @@ GlassCard {
                 font.capitalization: Font.AllUppercase
                 font.letterSpacing: 1.2
                 font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                renderType: Text.NativeRendering
-                font.hintingPreference: Font.PreferFullHinting
                 color: themeVM.palette.textTertiary
             }
 
@@ -184,8 +182,6 @@ GlassCard {
         Text {
             text: "当前主题色"
             font.pixelSize: 13
-            renderType: Text.NativeRendering
-            font.hintingPreference: Font.PreferFullHinting
             color: themeVM.palette.textTertiary
             Layout.leftMargin: 4
         }
@@ -209,8 +205,6 @@ GlassCard {
                 text: themeVM.palette.primary
                 font.pixelSize: 13
                 font.weight: Font.Medium
-                renderType: Text.NativeRendering
-                font.hintingPreference: Font.PreferFullHinting
                 color: themeVM.palette.textPrimary
 
                 Behavior on color {
