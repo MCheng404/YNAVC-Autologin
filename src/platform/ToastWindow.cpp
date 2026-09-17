@@ -154,6 +154,46 @@ Window {
                 // 必须用带 alpha 的颜色，让"背景淡、图标实"。
                 color: Qt.rgba(accentColor.r, accentColor.g, accentColor.b, 0.20)
 
+                // ── 图标动效 ──
+                // Rectangle 的 transformOrigin 默认是 Center，scale 绕中心缩放。
+                // 注意 iconEnter 与 iconBreathe 都会改 scale：必须串行 ——
+                // 进场结束后再启动呼吸，否则两个动画会互相打架。
+                ParallelAnimation {
+                    id: iconEnter
+                    NumberAnimation { target: iconBox; property: "scale"; from: 0.30; to: 1.0; duration: 340; easing.type: Easing.OutBack }
+                    NumberAnimation { target: iconRot; property: "angle"; from: -25;  to: 0;   duration: 340; easing.type: Easing.OutBack }
+                    onStopped: iconBreathe.start()
+                }
+                // 持续呼吸：极轻微缩放，让图标"活着"，但不喧宾夺主
+                SequentialAnimation {
+                    id: iconBreathe
+                    loops: Animation.Infinite
+                    NumberAnimation { target: iconBox; property: "scale"; to: 1.07; duration: 900; easing.type: Easing.InOutSine }
+                    NumberAnimation { target: iconBox; property: "scale"; to: 1.00; duration: 900; easing.type: Easing.InOutSine }
+                }
+                // error 类型额外抖一下，强化"出错了"的感知
+                SequentialAnimation {
+                    id: iconShake
+                    NumberAnimation { target: iconShift; property: "x"; to: -3; duration: 60 }
+                    NumberAnimation { target: iconShift; property: "x"; to:  3; duration: 60 }
+                    NumberAnimation { target: iconShift; property: "x"; to: -2; duration: 60 }
+                    NumberAnimation { target: iconShift; property: "x"; to:  0; duration: 60 }
+                }
+                Timer {
+                    id: iconShakeTimer
+                    interval: 420
+                    onTriggered: iconShake.start()
+                }
+                transform: [
+                    Translate { id: iconShift; x: 0 },
+                    Rotation  { id: iconRot; origin.x: 15; origin.y: 15; angle: 0 }
+                ]
+                Component.onCompleted: {
+                    iconEnter.start()
+                    if (root.toastType === "error")
+                        iconShakeTimer.start()
+                }
+
                 // 注意：strokeColor/fillColor/strokeWidth/capStyle/joinStyle 都是
                 // ShapePath 的属性，PathSvg 只有 path（+ viewBox）。
                 // 早期版本把这些样式属性直接写在 PathSvg 上，导致
