@@ -142,9 +142,11 @@ void DeviceViewModel::onFetchResult(const QVariantList &devices, const QString &
 {
     setLoading(false);
     if (!error.isEmpty()) {
+        qWarning() << "[Device] 拉取在线设备失败:" << error;
         setErrorMessage(error);       // 保留旧列表，仅提示错误
         return;
     }
+    qInfo() << "[Device] 在线设备已获取，共" << devices.size() << "台";
 
     const QString selfMac = normalizeMac(Platform::NetworkAdapter::getMacAddress());
     QVariantList processed;

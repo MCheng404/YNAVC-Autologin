@@ -16,6 +16,7 @@
 #include <QJsonValue>
 #include <QRegularExpression>
 #include <QDebug>
+#include <QRandomGenerator>
 #include <QCryptographicHash>
 
 namespace Platform {
@@ -175,17 +176,33 @@ bool SelfServiceClient::doLogin(QNetworkAccessManager &nam, const QString &accou
         qWarning() << "[SelfService] 未能从登录页提取 checkcode，页面长度 ="
                    << page.body.size();
 
+    // 1.7) ★★ 必须先请求一次 randomCode，否则服务端不认这次登录 ★★
+    //      这是页面加载后 JS 一定会做的事：
+    //        $("#codeimage").attr('src', window.ctx + 'login/randomCode?t=' + Math.random());
+    //      实测确认：跳过这一步直接 POST，服务端会**静默拒绝**
+    //      （302 回带 jsessionid 的登录页、响应体为空、无任何提示）；
+    //      补上这一步后立刻 302 → /Self/dashboard。
+    //      怀疑服务端用该请求把「当前验证码」标记为有效，缺失则视为非法流程。
+    {
+        const QString codeUrl = QString::fromLatin1(kBase)
+            + QStringLiteral("/login/randomCode?t=0.")
+            + QString::number(QRandomGenerator::global()->bounded(1000000));
+        Response img = syncGet(nam, QUrl(codeUrl), 5000,
+                               {{ QByteArrayLiteral("Referer"), loginPage.toUtf8() }});
+        qInfo() << "[SelfService] randomCode 已请求: HTTP" << img.status
+                << img.body.size() << "字节";
+    }
+
     // 2) POST 登录提交
     //    字段与顺序严格照搬 HAR 里抓到的**成功样本**：
     //      foo=&bar=&checkcode=<HTML值>&account=<账号>&password=<MD5>&code=
     //
-    //    三个踩过的坑（勿改）：
-    //    a) URL **不能**带 ";jsessionid=xxx"。虽然表单 action 里写着它，
-    //       但浏览器实际提交的是 /Self/login/verify。带上它会让服务端用
-    //       另一个会话去查验证码记录，结果必然是"验证码错误"。
-    //    b) 必须提交 checkcode（值取自登录页 HTML），且 code 保持为空。
-    //       不提交 checkcode 时服务端会**静默拒绝**：302 回登录页、无任何提示。
-    //    c) 不要提交 submit —— 浏览器里该按钮被 JS 置为 disabled，不会进入提交数据。
+    //    四个踩过的坑（勿改，每一条都是实测血泪）：
+    //    a) URL **必须**带 ";jsessionid=xxx"（表单 action 的原样）。HAR 里显示的
+    //       /Self/login/verify 是 Chrome 从显示 URL 中剥离 ";jsessionid=" 的假象。
+    //    b) **必须**提交 checkcode（值取自登录页 HTML），否则服务端静默拒绝。
+    //    c) **必须先请求一次 randomCode**（见上面的 1.7 步），否则同样静默拒绝。
+    //    d) 不要提交 submit —— 该按钮被 JS 置为 disabled，不会进入提交数据。
     // 1.6) 账号归一化：自助服务只认「纯账号」
     //      项目里 Settings::username() 是**认证用**账号，可能带 @unicom 这类后缀
     //      （认证接口需要），但自助服务登录必须用纯账号 ——
@@ -200,7 +217,8 @@ bool SelfServiceClient::doLogin(QNetworkAccessManager &nam, const QString &accou
     if (loginAccount != account)
         qInfo() << "[SelfService] 账号已归一化:" << account << "→" << loginAccount;
 
-    const QUrl postUrl(QString::fromLatin1(kBase) + QStringLiteral("/login/verify"));
+    const QUrl postUrl(QString::fromLatin1(kBase)
+                       + QStringLiteral("/login/verify;jsessionid=") + jsid);
     QUrlQuery q;
     q.addQueryItem(QStringLiteral("foo"), QString());
     q.addQueryItem(QStringLiteral("bar"), QString());
