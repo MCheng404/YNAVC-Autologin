@@ -168,6 +168,7 @@ int App::run()
     engine.rootContext()->setContextProperty(QStringLiteral("trayVM"),     m_trayVM);
     engine.rootContext()->setContextProperty(QStringLiteral("themeVM"),    m_themeVM);
     engine.rootContext()->setContextProperty(QStringLiteral("app"),        this);  // 暴露给 QML 调用 applyWindowMask
+    engine.rootContext()->setContextProperty(QStringLiteral("logVM"),      m_logger);  // 暴露最近运行日志给 LogCard
 
     const QUrl url(QStringLiteral("qrc:/AutoLogin/src/view/Main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,

@@ -42,10 +42,15 @@ GlassCard {
     // 设备总数：缓存一次跨边界读取，供 overflowCount / showList 复用，避免重复访问 deviceVM.devices
     property int deviceCount: deviceVM.devices ? deviceVM.devices.length : 0
 
-    // 可见设备（最多 6 行，超出截断并显示"还有 N 台…"）
+    // 可见设备（本机置顶，其余保持原序，最多 6 行，超出截断并显示"还有 N 台…"）
     property var visibleDevices: {
         var all = deviceVM.devices || []
-        return all.slice(0, 6)
+        var self = [], others = []
+        for (var i = 0; i < all.length; i++) {
+            if (all[i] && all[i].isSelf === true) self.push(all[i])
+            else others.push(all[i])
+        }
+        return self.concat(others).slice(0, 6)
     }
     property int overflowCount: Math.max(0, deviceCount - 6)
 
@@ -220,12 +225,38 @@ GlassCard {
                             Layout.bottomMargin: 8
                         }
 
-                        // 单行内容
-                        RowLayout {
+                        // 单行容器：发光层 / 底色层声明在内容之前 → 自然绘于内容下方，不用 z（避免打断批处理）
+                        Item {
                             Layout.fillWidth: true
                             Layout.topMargin: 8
                             Layout.bottomMargin: 8
-                            spacing: 10
+                            implicitHeight: rowLayout.implicitHeight
+
+                            // 本机发光层（玻璃描边式，仅 isSelf）：声明于内容之前 = 绘于下方
+                            Rectangle {
+                                anchors.fill: parent
+                                anchors.margins: -4
+                                radius: 12
+                                color: "transparent"
+                                border.color: themeVM.palette.primary
+                                border.width: 1.5
+                                opacity: 0.4
+                                visible: modelData.isSelf === true
+                            }
+
+                            // 本机极淡底色层（仅 isSelf）
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: 8
+                                color: Qt.rgba(themeVM.palette.primary.r, themeVM.palette.primary.g, themeVM.palette.primary.b, 0.06)
+                                visible: modelData.isSelf === true
+                            }
+
+                            // 单行内容
+                            RowLayout {
+                                id: rowLayout
+                                anchors.fill: parent
+                                spacing: 10
 
                             // 左：终端类型 + 本机标签（轻量 Row 定位器，间距由 spacing 控制）
                             Row {
@@ -324,6 +355,7 @@ GlassCard {
                         }
                     }
                 }
+            }
 
                 // 超出 6 行提示
                 Text {

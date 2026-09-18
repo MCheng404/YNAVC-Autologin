@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QDateTime>
+#include <atomic>
 
 class Settings;
 
@@ -28,14 +29,18 @@ public:
     qint64 nextTriggerTime() const;
 
     /** 当前周期抖动值（秒），供日志展示 */
-    qint64 jitterSec() const { return m_jitterSec; }
+    qint64 jitterSec() const { return m_jitterSec.load(); }
 
 signals:
     /** 触发认证信号 */
     void triggerAuth();
 
+private slots:
+    /** 设置变更时以当前时刻为基准重置调度周期，并重新摇抖动 */
+    void resetSchedule();
+
 private:
-    qint64 m_lastSchedAuth{0};
-    qint64 m_jitterSec{0};   // 当前周期随机抖动（秒，±300）
+    std::atomic<qint64> m_lastSchedAuth{0};
+    std::atomic<qint64> m_jitterSec{0};   // 当前周期随机抖动（秒，±300）
     Settings *m_settings = nullptr;
 };

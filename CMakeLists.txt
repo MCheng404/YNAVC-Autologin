@@ -120,6 +120,7 @@ qt6_add_qml_module(${PROJECT_NAME}
         src/view/Cards/AccountCard.qml
         src/view/Cards/AccentColorCard.qml
         src/view/Cards/DeviceCard.qml
+        src/view/Cards/LogCard.qml
         src/view/Components/SwitchToggle.qml
         src/view/Components/ThemeToggle.qml
         src/view/Components/CardSpinBox.qml

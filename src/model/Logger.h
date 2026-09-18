@@ -17,6 +17,12 @@
 class Logger : public QObject {
     Q_OBJECT
 
+    /**
+     * 最近日志（内存缓冲，时间正序：最旧在前、最新在后）。
+     * 供 QML（LogCard）绑定显示；变化时 emit recentLogsChanged()。
+     */
+    Q_PROPERTY(QStringList recentLogs READ recentLogs NOTIFY recentLogsChanged)
+
 public:
     explicit Logger(QObject *parent = nullptr);
     ~Logger();
@@ -33,16 +39,28 @@ public:
     /** 获取日志目录路径 */
     QString logPath() const;
 
+    /** 最近日志列表（时间正序），线程安全：持锁短暂拷贝 */
+    QStringList recentLogs() const;
+
 signals:
     /** 新日志消息信号 */
     void logMessage(const QString &msg);
+
+    /** 最近日志缓冲发生变化（供 QML 绑定刷新） */
+    void recentLogsChanged();
 
 private:
     /** 确保日志目录存在并打开当天的日志文件 */
     void ensureLogFile();
 
+    /** 保留的最近日志条数上限（环形缓冲） */
+    static constexpr int kMaxRecent = 200;
+
     QFile       m_logFile;
     QString     m_logPath;
     QDate       m_currentDate;
-    QMutex      m_mutex;
+    mutable QMutex m_mutex;          // mutable：供 const 的 recentLogs() 持锁拷贝
+
+    /** 最近日志定长环形缓冲（时间正序，每条含时间戳，可直接显示） */
+    QStringList m_recent;
 };

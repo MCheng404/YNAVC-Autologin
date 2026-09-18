@@ -60,7 +60,21 @@ void Logger::log(const QString &msg)
     stream << line;
     stream.flush();
 
+    // 更新内存环形缓冲（时间正序），并通知 QML。
+    // 复用同一把锁：日志可能来自 worker 线程，避免引入新的竞态。
+    m_recent.append(timestamp + msg);
+    if (m_recent.size() > kMaxRecent)
+        m_recent.removeFirst();
+
     emit logMessage(msg);
+    emit recentLogsChanged();
+}
+
+QStringList Logger::recentLogs() const
+{
+    // 持锁短暂拷贝后返回，避免把大对象长时间困在临界区内
+    QMutexLocker locker(&m_mutex);
+    return m_recent;
 }
 
 void Logger::autoCleanup()

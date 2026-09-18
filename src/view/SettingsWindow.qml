@@ -283,7 +283,7 @@ Window {
                         Layout.fillWidth: true
                         Layout.fillHeight: false
                         Layout.alignment: Qt.AlignTop
-                        spacing: 14
+                        spacing: 16
 
                         BasicSettingsCard {
                             Layout.fillWidth: true
@@ -302,6 +302,15 @@ Window {
                             Layout.fillWidth: true
                             settingsVM: settingsWindow.settingsVM
                             themeVM: settingsWindow.themeVM
+                        }
+
+                        LogCard {
+                            Layout.fillWidth: true
+                            themeVM: settingsWindow.themeVM
+                            // logVM 是 C++ 注入的上下文属性（Logger 实例）。
+                            // 必须显式传入 —— LogCard 顶层的 `property var logVM: null`
+                            // 会遮蔽同名上下文属性，不显式传的话卡片永远停在"待接入"。
+                            logVM: logVM
                         }
                     }
 
