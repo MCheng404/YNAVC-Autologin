@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setOrganizationName(QStringLiteral("AutoLogin"));
     app.setApplicationName(QStringLiteral("校园网自动登录"));
-    app.setApplicationVersion(QStringLiteral("2.6.1"));
+    app.setApplicationVersion(QStringLiteral("2.6.2"));
 
     // 关键：关闭窗口不退出应用（托盘常驻）
     app.setQuitOnLastWindowClosed(false);

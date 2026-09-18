@@ -131,6 +131,18 @@ void DeviceViewModel::refresh()
     QMetaObject::invokeMethod(m_worker, "refresh", Qt::QueuedConnection);
 }
 
+void DeviceViewModel::refreshIfStale(int minIntervalSec)
+{
+    // 供「打开设置时静默获取一次」这类自动场景使用。
+    // 首次调用时 m_lastAutoRefresh 尚未启动（isValid() 为 false）→ 必然执行；
+    // 之后 minIntervalSec 秒内的重复调用直接跳过，避免反复登录自助服务。
+    if (m_lastAutoRefresh.isValid()
+        && m_lastAutoRefresh.elapsed() < static_cast<qint64>(minIntervalSec) * 1000)
+        return;
+    m_lastAutoRefresh.restart();
+    refresh();
+}
+
 void DeviceViewModel::kick(const QString &sessionId)
 {
     if (m_loading) return;

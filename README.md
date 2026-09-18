@@ -1,6 +1,6 @@
 # YNAVC-Autologin
 
-[![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)](https://en.cppreference.com/w/cpp/17) ![Qt6.11](https://img.shields.io/badge/Qt-6.11-green) ![Platform](https://img.shields.io/badge/Platform-Windows%2010/11-blueviolet) ![Version](https://img.shields.io/badge/Version-2.6.1-purple) ![License](https://img.shields.io/badge/License-GPLv3-blue) [![Download](https://img.shields.io/badge/Download-v2.6.1-brightgreen)](https://github.com/MCheng404/YNAVC-Autologin/releases/latest)
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)](https://en.cppreference.com/w/cpp/17) ![Qt6.11](https://img.shields.io/badge/Qt-6.11-green) ![Platform](https://img.shields.io/badge/Platform-Windows%2010/11-blueviolet) ![Version](https://img.shields.io/badge/Version-2.6.2-purple) ![License](https://img.shields.io/badge/License-GPLv3-blue) [![Download](https://img.shields.io/badge/Download-v2.6.2-brightgreen)](https://github.com/MCheng404/YNAVC-Autologin/releases/latest)
 
 > **English** | [中文](#中文) | [Русский](#русский)
 

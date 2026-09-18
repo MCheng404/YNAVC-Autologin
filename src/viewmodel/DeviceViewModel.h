@@ -67,6 +67,11 @@ public:
     void setLogger(Logger *logger) { m_logger = logger; }
 
     Q_INVOKABLE void refresh();                 // 拉取设备列表
+    /** 自动触发的刷新（如"打开设置时静默获取一次"）。
+     *  与 refresh() 的区别：带最小间隔节流 —— 短时间内反复打开设置时
+     *  不会重复登录自助服务（每次 0.3~1s，对服务端也是无谓压力）。
+     *  手动点「刷新」按钮仍走 refresh()，不受节流限制。 */
+    Q_INVOKABLE void refreshIfStale(int minIntervalSec = 10);
     Q_INVOKABLE void kick(const QString &sessionId);      // 踢单个
     Q_INVOKABLE void kickAllExceptSelf();                 // 踢掉除本机 MAC 之外的全部
     Q_INVOKABLE void fetchCountOnly();        // 静默拉取一次设备数，结果通过信号播报
@@ -108,6 +113,7 @@ private:
     // 静默设备数拉取的防抖/并发保护（均在 UI 线程访问）
     bool          m_countFetching = false;   // 上一次未完成则忽略，避免堆叠请求
     QElapsedTimer m_lastCountFetch;          // 最小间隔（60s）节流
+    QElapsedTimer m_lastAutoRefresh;         // 自动刷新（refreshIfStale）的最小间隔节流
 
     // 内部 worker（类外定义，见本文件上方）：实际执行网络请求，存活于 m_thread
     DeviceWorker *m_worker = nullptr;

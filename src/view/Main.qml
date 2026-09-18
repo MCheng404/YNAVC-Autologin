@@ -86,6 +86,11 @@ Item {
             settingsLoader.item.show()
             settingsLoader.item.raise()
             settingsLoader.item.requestActivate()
+            // 再次打开设置时静默获取一次在线设备。
+            // 用 refreshIfStale（10s 节流）而非 refresh —— 反复开关设置窗口时
+            // 不应反复登录自助服务（每次 0.3~1s，对服务端也是无谓压力）。
+            if (typeof deviceVM !== "undefined" && deviceVM)
+                deviceVM.refreshIfStale(10)
         } else {
             console.log("Main.qml: Loader 已激活但 item 还未就绪")
         }

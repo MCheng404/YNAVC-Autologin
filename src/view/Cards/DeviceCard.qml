@@ -21,6 +21,13 @@ GlassCard {
 
     implicitHeight: col.implicitHeight + 32
 
+    // 卡片首次创建（= 首次打开设置窗口）时静默获取一次在线设备，
+    // 用户无需手动点「刷新」。后续每次打开设置由 Main.qml 调
+    // refreshIfStale() 兜底（带节流）。
+    Component.onCompleted: {
+        if (deviceVM) deviceVM.refresh()
+    }
+
     // ── 辅助函数 ──
 
     // 去掉终端类型前缀的 '#'
