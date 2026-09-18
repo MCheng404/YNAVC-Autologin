@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QVariantList>
 #include <QThread>
+#include <QElapsedTimer>
 #include <QString>
 
 class Settings;
@@ -27,6 +28,7 @@ public slots:
     void refresh();
     void kick(const QString &sessionId);
     void kickAllExceptSelf();
+    void fetchCountOnly();              // 静默拉取一次在线设备数（不改动 devices/loading）
 
 private:
     Settings        *m_settings = nullptr;
@@ -67,6 +69,7 @@ public:
     Q_INVOKABLE void refresh();                 // 拉取设备列表
     Q_INVOKABLE void kick(const QString &sessionId);      // 踢单个
     Q_INVOKABLE void kickAllExceptSelf();                 // 踢掉除本机 MAC 之外的全部
+    Q_INVOKABLE void fetchCountOnly();        // 静默拉取一次设备数，结果通过信号播报
 
     // 工具函数。放在 public：DeviceWorker 定义在类外，需要调用它们。
     static QString maskAccount(const QString &account);
@@ -77,12 +80,15 @@ signals:
     void loadingChanged();
     void errorMessageChanged();
     void accountChanged();
+    void deviceCountFetched(int count);        // 静默拉取成功：当前在线设备数
+    void deviceCountFetchFailed(QString err);  // 静默拉取失败：安静降级，不弹设备数
 
 private slots:
     // 由 worker 线程通过 QueuedConnection 回调，运行在 UI 线程
     void onFetchResult(const QVariantList &devices, const QString &error);
     void onKickResult(bool ok, const QString &error, const QString &sessionId);
     void onKickAllResult(int total, int success, int failed, const QString &error);
+    void onCountFetched(int count, const QString &error);  // 静默拉取的回调
 
 private:
     void setLoading(bool v);
@@ -98,6 +104,10 @@ private:
     QString      m_accountMasked;
 
     QThread *m_thread = nullptr;
+
+    // 静默设备数拉取的防抖/并发保护（均在 UI 线程访问）
+    bool          m_countFetching = false;   // 上一次未完成则忽略，避免堆叠请求
+    QElapsedTimer m_lastCountFetch;          // 最小间隔（60s）节流
 
     // 内部 worker（类外定义，见本文件上方）：实际执行网络请求，存活于 m_thread
     DeviceWorker *m_worker = nullptr;

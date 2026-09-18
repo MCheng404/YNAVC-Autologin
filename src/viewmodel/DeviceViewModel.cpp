@@ -33,6 +33,16 @@ void DeviceWorker::kick(const QString &sessionId)
                               Q_ARG(QString, sessionId));
 }
 
+void DeviceWorker::fetchCountOnly()
+{
+    QString err;
+    const QVariantList devs = Platform::SelfServiceClient::fetchDevices(
+        m_settings->username(), m_settings->password(), &err);
+    // 回到 UI 线程播报数量（不改 devices/loading）
+    QMetaObject::invokeMethod(m_vm, "onCountFetched", Qt::QueuedConnection,
+                              Q_ARG(int, devs.size()), Q_ARG(QString, err));
+}
+
 void DeviceWorker::kickAllExceptSelf()
 {
     QString err;
@@ -136,6 +146,29 @@ void DeviceViewModel::kickAllExceptSelf()
     setLoading(true);
     setErrorMessage(QString());
     QMetaObject::invokeMethod(m_worker, "kickAllExceptSelf", Qt::QueuedConnection);
+}
+
+void DeviceViewModel::fetchCountOnly()
+{
+    // 在 UI 线程执行：防抖 + 并发保护，绝不在 UI 线程做网络请求
+    if (m_countFetching)
+        return;                       // 上一次还在途中，直接忽略，避免堆叠多个请求
+    if (m_lastCountFetch.isValid() && m_lastCountFetch.elapsed() < 60000)
+        return;                       // 60s 最小间隔，避免对自助服务无谓施压
+    m_countFetching = true;
+    m_lastCountFetch.restart();
+    QMetaObject::invokeMethod(m_worker, "fetchCountOnly", Qt::QueuedConnection);
+}
+
+void DeviceViewModel::onCountFetched(int count, const QString &error)
+{
+    m_countFetching = false;
+    if (!error.isEmpty()) {
+        qWarning() << "[Device] 静默拉取设备数失败:" << error;
+        emit deviceCountFetchFailed(error);   // 安静降级：失败时不弹设备数
+        return;
+    }
+    emit deviceCountFetched(count);
 }
 
 void DeviceViewModel::onFetchResult(const QVariantList &devices, const QString &error)

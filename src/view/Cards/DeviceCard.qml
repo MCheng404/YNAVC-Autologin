@@ -39,6 +39,14 @@ GlassCard {
         return m > 0 ? (h + " 小时 " + m + " 分") : (h + " 小时")
     }
 
+    // MAC 显示格式：去掉 ':' 与 '-' 分隔符。
+    // 等宽字体下 "BE-FE-FD-EF-88-27"（17 字符）比 "BEFEFDEF8827"（12 字符）
+    // 多占约 36px，是设备行溢出的主因；去分隔符后信息无损、显著变紧凑。
+    function fmtMac(m) {
+        if (!m) return ""
+        return ("" + m).replace(/[:-]/g, "").toUpperCase()
+    }
+
     // 设备总数：缓存一次跨边界读取，供 overflowCount / showList 复用，避免重复访问 deviceVM.devices
     property int deviceCount: deviceVM.devices ? deviceVM.devices.length : 0
 
@@ -292,26 +300,35 @@ GlassCard {
                                 }
                             }
 
-                            // 中：IP / MAC（等宽字体，轻量 Column 定位器）
-                            Column {
+                            // 中：IP / MAC
+                            // 注意：这里**必须**用 ColumnLayout 且让 Text 直接作为其子项，
+                            // 才能用 Layout.fillWidth + elide 实现「超长截断」。
+                            // 若改用轻量的 Column 定位器（曾为省布局开销这样改过），
+                            // 子项不可压缩 —— 内容一长（MAC 带分隔符时整行约 413px，
+                            // 而左列可用宽度仅约 360px）就会把右侧「下线」按钮挤出卡片外。
+                            ColumnLayout {
                                 spacing: 2
                                 Layout.alignment: Qt.AlignVCenter
+                                Layout.fillWidth: true
+                                Layout.minimumWidth: 84
 
                                 Text {
+                                    Layout.fillWidth: true
                                     text: modelData.ip || ""
+                                    elide: Text.ElideRight
                                     font.pixelSize: 13
                                     font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
                                     color: themeVM.palette.textPrimary
                                 }
                                 Text {
-                                    text: modelData.mac || ""
+                                    Layout.fillWidth: true
+                                    text: root.fmtMac(modelData.mac)
+                                    elide: Text.ElideRight
                                     font.pixelSize: 13
                                     font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
                                     color: themeVM.palette.textSecondary
                                 }
                             }
-
-                            Item { Layout.fillWidth: true }
 
                             // 右：使用时长
                             Text {

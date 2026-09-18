@@ -303,6 +303,24 @@ void App::setupViewModelBindings()
         Platform::Notification::setEnabled(m_settings->notifications());
     });
 
+    // 静默设备数拉取结果 → 弹一条"设备状态"补充通知（认证成功后才触发）
+    connect(m_deviceVM, &DeviceViewModel::deviceCountFetched, this,
+            [this](int count) {
+        if (!m_settings->notifications()) return;
+        // 通知位置沿用用户设置（与现有 ToastWindow 用法一致）
+        ToastWindow::show(
+            QStringLiteral("设备状态"),
+            QStringLiteral("当前 %1 台设备在线").arg(count),
+            QStringLiteral("info"),
+            m_settings->toastPosition());
+    });
+    connect(m_deviceVM, &DeviceViewModel::deviceCountFetchFailed, this,
+            [this](const QString &err) {
+        Q_UNUSED(err)
+        // 安静降级：拉取失败时仅记录，不弹设备数，也不影响已弹出的认证成功通知
+        m_logger->log(QStringLiteral("[设备数] 静默拉取失败，跳过设备数通知"));
+    });
+
     // 手动登录：UI 线程信号 → 置位原子标志，由 worker 线程轮询执行（避免 UI 冻结）
     connect(m_trayVM, &TrayViewModel::manualLoginRequested, this, [this]() {
         m_manualAuthRequested.store(true);
@@ -443,6 +461,14 @@ void App::workerLoop()
         if (result == AuthEngine::AuthResult::Success
             || result == AuthEngine::AuthResult::AlreadyOnline) {
             fails = 0;
+
+            // 认证成功后静默拉取一次在线设备数（跨线程投递到 UI 线程的 DeviceViewModel，
+            // 由其内部防抖/并发保护；成功通知已在 authCompleted 信号中先行弹出，不被阻塞）
+            if (m_settings->notifications()) {
+                QMetaObject::invokeMethod(m_deviceVM, [this]() {
+                    m_deviceVM->fetchCountOnly();
+                }, Qt::QueuedConnection);
+            }
 
             QMetaObject::invokeMethod(m_tray, [this]() {
                 m_tray->updateIcon(Platform::SystemTray::Status::Connected);

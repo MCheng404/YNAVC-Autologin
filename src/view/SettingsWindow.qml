@@ -33,6 +33,11 @@ Window {
     required property var themeVM
     required property var trayVM
     required property var deviceVM
+    // 日志 ViewModel（Logger 实例）。与其它 VM 一样由 Main.qml 通过
+    // Loader.setSource 的初始属性显式注入 —— 不要指望直接读上下文属性：
+    // 本组件是 Loader 动态创建的，同名上下文属性在这里不可靠
+    // （LogCard 的 `property var logVM` 也会遮蔽它）。
+    required property var logVM
 
     // 居中显示
     x: (Screen.width - width) / 2
@@ -310,7 +315,7 @@ Window {
                             // logVM 是 C++ 注入的上下文属性（Logger 实例）。
                             // 必须显式传入 —— LogCard 顶层的 `property var logVM: null`
                             // 会遮蔽同名上下文属性，不显式传的话卡片永远停在"待接入"。
-                            logVM: logVM
+                            logVM: settingsWindow.logVM
                         }
                     }
 
