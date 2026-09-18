@@ -40,11 +40,20 @@ GlassCard {
     }
 
     // MAC 显示格式：去掉 ':' 与 '-' 分隔符。
-    // 等宽字体下 "BE-FE-FD-EF-88-27"（17 字符）比 "BEFEFDEF8827"（12 字符）
-    // 多占约 36px，是设备行溢出的主因；去分隔符后信息无损、显著变紧凑。
     function fmtMac(m) {
         if (!m) return ""
         return ("" + m).replace(/[:-]/g, "").toUpperCase()
+    }
+
+    // MAC 短格式：只取后 6 位（无分隔符、大写）。
+    // 设置窗口左列卡片可用宽度实测仅约 233px（w = parentW = 233），
+    // 而「完整 MAC(≈96px) + IP(≈96px) + 下线按钮(≈55px) + 间距」≈ 270px 必然超宽。
+    // MAC 的后 3 字节本身即设备唯一标识，后 6 位足够辨识，故列表里用短格式；
+    // 完整格式仍保留在 fmtMac() 中，需要时可随时切回。
+    function fmtMacShort(m) {
+        if (!m) return ""
+        var s = ("" + m).replace(/[:-]/g, "").toUpperCase()
+        return s.length > 6 ? s.slice(-6) : s
     }
 
     // 设备总数：缓存一次跨边界读取，供 overflowCount / showList 复用，避免重复访问 deviceVM.devices
@@ -206,10 +215,12 @@ GlassCard {
                 visible: !root.showList
             }
 
-            // 设备列表
-            ColumnLayout {
+            // 设备列表（独立长方形卡片，竖向排列，卡片间距 8）
+            Column {
+                id: devColumn
                 Layout.fillWidth: true
-                spacing: 0
+                Layout.leftMargin: 4
+                spacing: 8
                 visible: root.showList
 
                 Repeater {
@@ -217,34 +228,17 @@ GlassCard {
                     // 故意保留 slice（最多 6）：避免为超出设备创建隐藏 delegate（visible:false 仍会构造对象/求值绑定），也更省一次跨边界读取
                     model: root.visibleDevices
 
-                    // delegate 根对象：所有 onXxxChanged 必须挂在这里（与属性定义同源）
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: 0
+                    // delegate 根对象：Item + 显式 width 锁定卡片宽度 = 列表容器宽度
+                    Item {
+                        id: cardRoot
+                        width: parent.width
+                        height: 68
 
-                        // 行间分隔线（首行不显示）
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.leftMargin: 0
-                            Layout.rightMargin: 0
-                            height: 1
-                            color: themeVM.palette.divider
-                            visible: index > 0
-                            Layout.bottomMargin: 8
-                        }
-
-                        // 单行容器：发光层 / 底色层声明在内容之前 → 自然绘于内容下方，不用 z（避免打断批处理）
-                        Item {
-                            Layout.fillWidth: true
-                            Layout.topMargin: 8
-                            Layout.bottomMargin: 8
-                            implicitHeight: rowLayout.implicitHeight
-
-                            // 本机发光层（玻璃描边式，仅 isSelf）：声明于内容之前 = 绘于下方
+                            // 本机卡片：描边发光层（声明于内容之前 = 绘于下方，不用 z）
                             Rectangle {
                                 anchors.fill: parent
-                                anchors.margins: -4
-                                radius: 12
+                                anchors.margins: -2
+                                radius: 10
                                 color: "transparent"
                                 border.color: themeVM.palette.primary
                                 border.width: 1.5
@@ -252,7 +246,13 @@ GlassCard {
                                 visible: modelData.isSelf === true
                             }
 
-                            // 本机极淡底色层（仅 isSelf）
+                            // 卡片底色
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: 8
+                                color: themeVM.palette.surfaceVariant
+                            }
+                            // 本机淡底（叠加在 surfaceVariant 之上）
                             Rectangle {
                                 anchors.fill: parent
                                 radius: 8
@@ -260,117 +260,122 @@ GlassCard {
                                 visible: modelData.isSelf === true
                             }
 
-                            // 单行内容
-                            RowLayout {
-                                id: rowLayout
-                                anchors.fill: parent
-                                spacing: 10
+                            // 第一行：左 终端类型 + 本机标签；右 使用时长
+                            Item {
+                                id: line1
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.top: parent.top
+                                anchors.topMargin: 10
+                                height: 18
 
-                            // 左：终端类型 + 本机标签（轻量 Row 定位器，间距由 spacing 控制）
-                            Row {
-                                spacing: 6
-                                Layout.alignment: Qt.AlignVCenter
-
-                                Text {
+                                Row {
+                                    anchors.left: parent.left
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: root.cleanType(modelData.terminalType)
-                                    font.pixelSize: 13
-                                    font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                                    color: themeVM.palette.textSecondary
-                                }
-
-                                // 本机标签（primary 12% 透明底 + primary 文字）
-                                Rectangle {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    visible: modelData.isSelf === true
-                                    height: 18
-                                    radius: 5
-                                    color: Qt.rgba(themeVM.palette.primary.r, themeVM.palette.primary.g, themeVM.palette.primary.b, 0.12)
-                                    // 宽度按文字自适应
-                                    width: selfTagTxt.width + 12
+                                    spacing: 6
 
                                     Text {
-                                        id: selfTagTxt
-                                        anchors.centerIn: parent
-                                        text: "本机"
-                                        font.pixelSize: 10
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: root.cleanType(modelData.terminalType)
+                                        font.pixelSize: 13
                                         font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                                        color: themeVM.palette.primary
+                                        color: themeVM.palette.textSecondary
                                     }
+
+                                    // 本机标签（primary 12% 透明底 + primary 文字）
+                                    Rectangle {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        visible: modelData.isSelf === true
+                                        height: 18
+                                        radius: 5
+                                        color: Qt.rgba(themeVM.palette.primary.r, themeVM.palette.primary.g, themeVM.palette.primary.b, 0.12)
+                                        width: selfTagTxt.width + 12
+
+                                        Text {
+                                            id: selfTagTxt
+                                            anchors.centerIn: parent
+                                            text: "本机"
+                                            font.pixelSize: 10
+                                            font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
+                                            color: themeVM.palette.primary
+                                        }
+                                    }
+                                }
+
+                                Text {
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: root.fmtUseTime(modelData.useTime)
+                                    font.pixelSize: 13
+                                    font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
+                                    color: themeVM.palette.textTertiary
                                 }
                             }
 
-                            // 中：IP / MAC
-                            // 注意：这里**必须**用 ColumnLayout 且让 Text 直接作为其子项，
-                            // 才能用 Layout.fillWidth + elide 实现「超长截断」。
-                            // 若改用轻量的 Column 定位器（曾为省布局开销这样改过），
-                            // 子项不可压缩 —— 内容一长（MAC 带分隔符时整行约 413px，
-                            // 而左列可用宽度仅约 360px）就会把右侧「下线」按钮挤出卡片外。
-                            ColumnLayout {
-                                spacing: 2
-                                Layout.alignment: Qt.AlignVCenter
-                                Layout.fillWidth: true
-                                Layout.minimumWidth: 84
+                            // 第二行：左 MAC；中右 IP（约束宽度 + elide 兜底）；右 下线按钮
+                            Item {
+                                id: line2
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.top: line1.bottom
+                                anchors.topMargin: 4
+                                height: 26
 
                                 Text {
-                                    Layout.fillWidth: true
+                                    id: macTxt
+                                    anchors.left: parent.left
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: root.fmtMacShort(modelData.mac)
+                                    font.pixelSize: 13
+                                    font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
+                                    color: themeVM.palette.textSecondary
+                                }
+
+                                Rectangle {
+                                    id: kickBtn
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    visible: modelData.isSelf !== true
+                                    height: 26
+                                    radius: 6
+                                    color: kickMouse.containsMouse
+                                          ? Qt.rgba(themeVM.palette.error.r, themeVM.palette.error.g, themeVM.palette.error.b, 0.12)
+                                          : "transparent"
+                                    width: kickTxt.width + 14
+
+                                    Text {
+                                        id: kickTxt
+                                        anchors.centerIn: parent
+                                        text: "下线"
+                                        font.pixelSize: 13
+                                        font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
+                                        color: kickMouse.containsMouse ? themeVM.palette.error : themeVM.palette.textSecondary
+                                    }
+
+                                    Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.OutQuad } }
+
+                                    MouseArea {
+                                        id: kickMouse
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        onClicked: deviceVM.kick(modelData.sessionId)
+                                    }
+                                }
+
+                                Text {
+                                    id: ipTxt
+                                    anchors.left: macTxt.right
+                                    anchors.leftMargin: 10
+                                    anchors.right: kickBtn.left
+                                    anchors.rightMargin: 10
+                                    anchors.verticalCenter: parent.verticalCenter
                                     text: modelData.ip || ""
                                     elide: Text.ElideRight
                                     font.pixelSize: 13
                                     font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
                                     color: themeVM.palette.textPrimary
                                 }
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: root.fmtMac(modelData.mac)
-                                    elide: Text.ElideRight
-                                    font.pixelSize: 13
-                                    font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
-                                    color: themeVM.palette.textSecondary
-                                }
                             }
-
-                            // 右：使用时长
-                            Text {
-                                text: root.fmtUseTime(modelData.useTime)
-                                font.pixelSize: 13
-                                font.family: "JetBrains Mono, LXGW Neo XiHei Plus, monospace"
-                                color: themeVM.palette.textTertiary
-                                Layout.alignment: Qt.AlignVCenter
-                            }
-
-                            // 最右：下线（本机不显示，避免误踢自己）
-                            Rectangle {
-                                id: kickBtn
-                                visible: modelData.isSelf !== true
-                                height: 26
-                                radius: 6
-                                color: kickMouse.containsMouse
-                                      ? Qt.rgba(themeVM.palette.error.r, themeVM.palette.error.g, themeVM.palette.error.b, 0.12)
-                                      : "transparent"
-                                width: kickTxt.width + 14
-                                Layout.alignment: Qt.AlignVCenter
-
-                                Text {
-                                    id: kickTxt
-                                    anchors.centerIn: parent
-                                    text: "下线"
-                                    font.pixelSize: 13
-                                    font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
-                                    color: kickMouse.containsMouse ? themeVM.palette.error : themeVM.palette.textSecondary
-                                }
-
-                                Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.OutQuad } }
-
-                                MouseArea {
-                                    id: kickMouse
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    onClicked: deviceVM.kick(modelData.sessionId)
-                                }
-                            }
-                        }
-                    }
                 }
             }
 
