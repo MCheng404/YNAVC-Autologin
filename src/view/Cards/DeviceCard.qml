@@ -39,14 +39,17 @@ GlassCard {
         return m > 0 ? (h + " 小时 " + m + " 分") : (h + " 小时")
     }
 
+    // 设备总数：缓存一次跨边界读取，供 overflowCount / showList 复用，避免重复访问 deviceVM.devices
+    property int deviceCount: deviceVM.devices ? deviceVM.devices.length : 0
+
     // 可见设备（最多 6 行，超出截断并显示"还有 N 台…"）
     property var visibleDevices: {
         var all = deviceVM.devices || []
         return all.slice(0, 6)
     }
-    property int overflowCount: Math.max(0, (deviceVM.devices ? deviceVM.devices.length : 0) - 6)
+    property int overflowCount: Math.max(0, deviceCount - 6)
 
-    property bool showList: !deviceVM.loading && (deviceVM.devices ? deviceVM.devices.length > 0 : false)
+    property bool showList: !deviceVM.loading && deviceCount > 0
 
     ColumnLayout {
         id: col
@@ -198,6 +201,7 @@ GlassCard {
 
                 Repeater {
                     id: devRepeater
+                    // 故意保留 slice（最多 6）：避免为超出设备创建隐藏 delegate（visible:false 仍会构造对象/求值绑定），也更省一次跨边界读取
                     model: root.visibleDevices
 
                     // delegate 根对象：所有 onXxxChanged 必须挂在这里（与属性定义同源）
@@ -223,12 +227,13 @@ GlassCard {
                             Layout.bottomMargin: 8
                             spacing: 10
 
-                            // 左：终端类型 + 本机标签
-                            RowLayout {
+                            // 左：终端类型 + 本机标签（轻量 Row 定位器，间距由 spacing 控制）
+                            Row {
                                 spacing: 6
                                 Layout.alignment: Qt.AlignVCenter
 
                                 Text {
+                                    anchors.verticalCenter: parent.verticalCenter
                                     text: root.cleanType(modelData.terminalType)
                                     font.pixelSize: 13
                                     font.family: "LXGW Neo XiHei Plus, Inter, sans-serif"
@@ -237,6 +242,7 @@ GlassCard {
 
                                 // 本机标签（primary 12% 透明底 + primary 文字）
                                 Rectangle {
+                                    anchors.verticalCenter: parent.verticalCenter
                                     visible: modelData.isSelf === true
                                     height: 18
                                     radius: 5
@@ -255,8 +261,8 @@ GlassCard {
                                 }
                             }
 
-                            // 中：IP / MAC（等宽字体）
-                            ColumnLayout {
+                            // 中：IP / MAC（等宽字体，轻量 Column 定位器）
+                            Column {
                                 spacing: 2
                                 Layout.alignment: Qt.AlignVCenter
 
